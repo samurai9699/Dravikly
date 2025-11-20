@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Zap, Shield, TrendingUp, Users } from 'lucide-react';
+import { ArrowRight, Zap, Shield, TrendingUp, Users, Scan, Wrench, FileText, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 
@@ -170,33 +170,126 @@ export default function Home() {
         </section>
 
         <section className="max-w-6xl mx-auto mt-32">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              Stop guessing.{' '}
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                Start converting.
+              </span>
+            </h2>
+            <p className="text-xl text-slate-400">
+              Everything you need to eliminate friction and boost conversions
+            </p>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                icon: Zap,
-                title: 'Instant Analysis',
-                description: 'Get comprehensive friction analysis in under 60 seconds',
+                icon: Scan,
+                title: 'Instant Friction Detection',
+                description: 'AI analyzes your forms in 30 seconds',
+                gradient: 'from-cyan-500 to-blue-500',
+              },
+              {
+                icon: Wrench,
+                title: 'Actionable Fixes',
+                description: 'Get specific rewrites and UI changes',
+                gradient: 'from-blue-500 to-purple-500',
               },
               {
                 icon: TrendingUp,
-                title: 'Actionable Insights',
-                description: 'Specific fixes ranked by impact on conversion rate',
-              },
-              {
-                icon: Shield,
-                title: 'Battle-Tested',
-                description: 'Proven frameworks used by top converting sites',
+                title: 'Conversion Impact Score',
+                description: 'See predicted lift from each fix',
+                gradient: 'from-purple-500 to-pink-500',
               },
             ].map((feature, index) => (
               <div
                 key={index}
-                className="bg-slate-800/30 backdrop-blur-sm border border-cyan-400/20 rounded-xl p-8 hover:border-cyan-400/50 transition-all duration-300 hover:transform hover:-translate-y-1"
+                className="group bg-slate-800/30 backdrop-blur-sm border border-cyan-400/20 rounded-xl p-8 hover:border-cyan-400/50 transition-all duration-300 hover:transform hover:-translate-y-2"
               >
-                <feature.icon className="w-12 h-12 text-cyan-400 mb-4" />
+                <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className="w-8 h-8 text-white" />
+                </div>
                 <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-slate-400">{feature.description}</p>
+                <p className="text-slate-400 leading-relaxed">{feature.description}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="max-w-6xl mx-auto mt-32">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">How It Works</h2>
+            <p className="text-xl text-slate-400">
+              From URL to insights in under a minute
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8 relative">
+            <div className="hidden md:block absolute top-1/4 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
+
+            {[
+              {
+                step: 1,
+                icon: FileText,
+                title: 'Paste URL',
+                description: 'Enter your landing page or form URL',
+              },
+              {
+                step: 2,
+                icon: Scan,
+                title: 'AI Scans Forms',
+                description: 'Advanced AI analyzes every friction point',
+              },
+              {
+                step: 3,
+                icon: TrendingUp,
+                title: 'Get Detailed Report',
+                description: 'Receive prioritized list of issues',
+              },
+              {
+                step: 4,
+                icon: CheckCircle,
+                title: 'Fix & Convert More',
+                description: 'Implement changes and watch conversions soar',
+              },
+            ].map((step, index) => (
+              <div
+                key={index}
+                className="relative bg-slate-800/30 backdrop-blur-sm border border-cyan-400/20 rounded-xl p-6 hover:border-cyan-400/50 transition-all duration-300"
+              >
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center font-bold text-sm border-4 border-slate-900 z-10">
+                  {step.step}
+                </div>
+                <div className="mt-6 flex flex-col items-center text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-slate-700/50 flex items-center justify-center">
+                    <step.icon className="w-8 h-8 text-cyan-400" />
+                  </div>
+                  <h3 className="text-lg font-bold">{step.title}</h3>
+                  <p className="text-sm text-slate-400 leading-relaxed">{step.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="max-w-4xl mx-auto mt-32 text-center">
+          <div className="bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-cyan-400/30 rounded-2xl p-12">
+            <h2 className="text-4xl font-bold mb-6">
+              Ready to eliminate friction?
+            </h2>
+            <p className="text-xl text-slate-300 mb-8">
+              Join hundreds of founders who have already optimized their conversion funnels
+            </p>
+            <Link href="/signup">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-lg px-12 py-6 group"
+              >
+                Start Your Free Analysis
+                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
           </div>
         </section>
       </main>
