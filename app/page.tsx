@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Zap, Shield, TrendingUp, Users, Scan, Wrench, FileText, CheckCircle } from 'lucide-react';
+import { ArrowRight, Zap, Shield, TrendingUp, Users, Scan, Wrench, FileText, CheckCircle, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 
@@ -270,6 +270,144 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="max-w-6xl mx-auto mt-32">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              Simple,{' '}
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                transparent pricing
+              </span>
+            </h2>
+            <p className="text-xl text-slate-400">
+              Choose the plan that fits your conversion goals
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                name: 'Free',
+                price: '$0',
+                period: 'forever',
+                analyses: 3,
+                features: [
+                  '3 analyses per day',
+                  'Basic friction detection',
+                  'Email support',
+                ],
+                cta: 'Start Free',
+                highlighted: false,
+              },
+              {
+                name: 'Pro',
+                price: '$29',
+                period: 'per month',
+                analyses: 20,
+                features: [
+                  '20 analyses per day',
+                  'Advanced AI insights',
+                  'Priority support',
+                  'Export reports',
+                ],
+                cta: 'Start Pro Trial',
+                highlighted: true,
+                popular: true,
+              },
+              {
+                name: 'Ultra',
+                price: '$99',
+                period: 'per month',
+                analyses: 'Unlimited',
+                features: [
+                  'Unlimited analyses',
+                  'White-label reports',
+                  'Dedicated support',
+                  'API access',
+                ],
+                cta: 'Start Ultra Trial',
+                highlighted: false,
+              },
+            ].map((tier, index) => (
+              <div
+                key={index}
+                className={`relative group ${
+                  tier.highlighted
+                    ? 'md:scale-105 z-10'
+                    : ''
+                }`}
+              >
+                {tier.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
+                    <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-bold px-4 py-1 rounded-full">
+                      Most Popular
+                    </div>
+                  </div>
+                )}
+                <div
+                  className={`relative h-full bg-slate-800/50 backdrop-blur-sm border rounded-2xl p-8 transition-all duration-300 ${
+                    tier.highlighted
+                      ? 'border-cyan-400/50 shadow-lg shadow-cyan-400/20'
+                      : 'border-cyan-400/20 hover:border-cyan-400/40'
+                  } group-hover:shadow-2xl group-hover:shadow-cyan-400/20`}
+                >
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
+                    <div className="flex items-baseline">
+                      <span className="text-5xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                        {tier.price}
+                      </span>
+                      <span className="text-slate-400 ml-2">/{tier.period}</span>
+                    </div>
+                  </div>
+
+                  <div className="mb-6 pb-6 border-b border-slate-700">
+                    <div className="flex items-center justify-center space-x-2 text-lg">
+                      <TrendingUp className="w-5 h-5 text-cyan-400" />
+                      <span className="font-semibold">
+                        {typeof tier.analyses === 'number' ? `${tier.analyses} analyses` : tier.analyses}
+                      </span>
+                      <span className="text-slate-400">per day</span>
+                    </div>
+                  </div>
+
+                  <ul className="space-y-4 mb-8">
+                    {tier.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-start space-x-3">
+                        <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-slate-300">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Button
+                    className={`w-full ${
+                      tier.highlighted
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white'
+                        : 'bg-slate-700 hover:bg-slate-600 text-white'
+                    }`}
+                    size="lg"
+                  >
+                    {tier.cta}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link href="/pricing">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10"
+              >
+                See Full Pricing Details
+                <ArrowRight className="ml-2" />
+              </Button>
+            </Link>
           </div>
         </section>
 
