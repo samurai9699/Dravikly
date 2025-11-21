@@ -10,12 +10,14 @@ import {
   ArrowRight,
   Clock,
   ExternalLink,
+  Target,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { UsageIndicator } from '@/components/dashboard/usage-indicator';
+import { UpgradeModal } from '@/components/upgrade-modal';
 
 interface Analysis {
   id: string;
@@ -36,6 +38,7 @@ export default function DashboardPage() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [totalAnalyses, setTotalAnalyses] = useState(0);
   const [recentAnalyses, setRecentAnalyses] = useState<Analysis[]>([]);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -243,20 +246,42 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-cyan-400/30 rounded-2xl p-8 text-center">
-        <h2 className="text-3xl font-bold mb-4">Ready to analyze?</h2>
-        <p className="text-slate-300 mb-6 text-lg">
-          Discover friction points in your funnel and get AI-powered recommendations
-        </p>
-        <Link href="/dashboard/analyze">
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white group"
-          >
-            Run New Analysis
-            <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-          </Button>
-        </Link>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-cyan-400/30 rounded-2xl p-8 text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to analyze?</h2>
+          <p className="text-slate-300 mb-6 text-lg">
+            Discover friction points in your funnel and get AI-powered recommendations
+          </p>
+          <Link href="/dashboard/analyze">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white group"
+            >
+              Run New Analysis
+              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
+        </div>
+
+        {subscription?.tier !== 'ULTRA' && (
+          <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 border border-purple-400/30 rounded-2xl p-8 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-500/20 rounded-full mb-4">
+              <Crown className="w-6 h-6 text-purple-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Unlock Ultra Power</h3>
+            <p className="text-slate-300 mb-4">
+              Get unlimited analyses, competitive benchmarking, and API access
+            </p>
+            <Button
+              onClick={() => setShowUpgradeModal(true)}
+              size="lg"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+            >
+              <Target className="w-5 h-5 mr-2" />
+              Discover Ultra
+            </Button>
+          </div>
+        )}
       </div>
 
       <div>
@@ -349,6 +374,14 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        feature="Competitive Benchmarking"
+        requiredTier="ULTRA"
+        description="Compare your friction score against competitors. Get unlimited analyses, priority processing, API access, and white-label reports."
+      />
     </div>
   );
 }

@@ -8,14 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { createClient } from '@/lib/supabase/client';
+import { UpgradeModal } from '@/components/upgrade-modal';
 import Link from 'next/link';
 
 const PROGRESS_MESSAGES = [
@@ -314,46 +308,17 @@ export default function AnalyzePage() {
         </CardContent>
       </Card>
 
-      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
-        <DialogContent className="bg-slate-800 border-cyan-400/30 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Daily Limit Reached</DialogTitle>
-            <DialogDescription className="text-slate-400">
-              You've used all {tier === 'FREE' ? '3' : '20'} analyses for today.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-400/30 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-red-400 mb-1">
-                    Upgrade to continue analyzing
-                  </p>
-                  <p className="text-sm text-slate-300">
-                    Get more daily analyses and unlock premium features with PRO or ULTRA plans
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
-                <span className="text-slate-300">PRO Plan</span>
-                <span className="text-cyan-400 font-semibold">20 analyses/day</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
-                <span className="text-slate-300">ULTRA Plan</span>
-                <span className="text-purple-400 font-semibold">Unlimited analyses</span>
-              </div>
-            </div>
-            <Link href="/pricing">
-              <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white">
-                View Pricing Plans
-              </Button>
-            </Link>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        feature="Daily Analysis Limit"
+        requiredTier={tier === 'FREE' ? 'PRO' : 'ULTRA'}
+        description={
+          tier === 'FREE'
+            ? "You've used all 3 analyses for today. Upgrade to PRO for 20 analyses per day, or ULTRA for unlimited analyses."
+            : "You've used all 20 analyses for today. Upgrade to ULTRA for unlimited analyses and priority processing."
+        }
+      />
     </div>
   );
 }

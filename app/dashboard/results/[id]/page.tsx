@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { UpgradeModal } from '@/components/upgrade-modal';
 
 interface FrictionPoint {
   type: string;
@@ -50,6 +51,7 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tier, setTier] = useState('FREE');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const router = useRouter();
   const params = useParams();
   const supabase = createClient();
@@ -179,8 +181,7 @@ export default function ResultsPage() {
 
   const handleDownloadPDF = async () => {
     if (tier === 'FREE') {
-      toast.error('Upgrade to PRO or ULTRA to download PDF reports');
-      router.push('/pricing');
+      setShowUpgradeModal(true);
       return;
     }
 
@@ -553,6 +554,14 @@ export default function ResultsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        feature="PDF Export"
+        requiredTier="PRO"
+        description="Download professional PDF reports of your friction analysis. Perfect for sharing with your team or clients."
+      />
     </div>
   );
 }
