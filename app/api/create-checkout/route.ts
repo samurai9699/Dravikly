@@ -90,8 +90,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error('Stripe checkout error:', error);
+
+    if (error instanceof Stripe.errors.StripeError) {
+      return NextResponse.json(
+        { error: `Payment service error: ${error.message}` },
+        { status: 502 }
+      );
+    }
+
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        { error: 'Invalid request format' },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Failed to create checkout session. Please try again.' },
+      { error: 'Failed to create checkout session. Please try again later.' },
       { status: 500 }
     );
   }

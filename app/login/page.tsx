@@ -15,13 +15,38 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const router = useRouter();
   const supabase = createClient();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setEmailError('');
+    setPasswordError('');
+
+    if (!email) {
+      setEmailError('Email is required');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    if (!password) {
+      setPasswordError('Password is required');
+      return;
+    }
+
+    if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -39,7 +64,11 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Network error. Please check your internet connection and try again.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -137,11 +166,18 @@ export default function LoginPage() {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="pl-10 bg-slate-900/50 border-slate-700 focus:border-cyan-400 text-white"
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError('');
+                  }}
+                  className={`pl-10 bg-slate-900/50 border-slate-700 focus:border-cyan-400 text-white ${
+                    emailError ? 'border-red-500 focus:border-red-500' : ''
+                  }`}
                 />
               </div>
+              {emailError && (
+                <p className="text-sm text-red-400 mt-1">{emailError}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -155,11 +191,18 @@ export default function LoginPage() {
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pl-10 bg-slate-900/50 border-slate-700 focus:border-cyan-400 text-white"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError('');
+                  }}
+                  className={`pl-10 bg-slate-900/50 border-slate-700 focus:border-cyan-400 text-white ${
+                    passwordError ? 'border-red-500 focus:border-red-500' : ''
+                  }`}
                 />
               </div>
+              {passwordError && (
+                <p className="text-sm text-red-400 mt-1">{passwordError}</p>
+              )}
             </div>
 
             <div className="flex items-center justify-end">

@@ -151,7 +151,11 @@ export default function AnalyzePage() {
 
       router.push(`/dashboard/results/${data.analysisId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Network error. Please check your internet connection and try again.');
+      } else {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      }
       setLoading(false);
     }
   };
