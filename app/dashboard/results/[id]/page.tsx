@@ -332,21 +332,21 @@ export default function ResultsPage() {
     : [];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
             <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
               Analysis Results
             </span>
           </h1>
-          <div className="flex items-center space-x-3 text-slate-400">
-            <ExternalLink className="w-4 h-4" />
+          <div className="flex items-center space-x-3 text-slate-400 overflow-hidden">
+            <ExternalLink className="w-4 h-4 flex-shrink-0" />
             <a
               href={analysis.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-cyan-400 transition-colors"
+              className="hover:text-cyan-400 transition-colors truncate"
             >
               {analysis.url}
             </a>
@@ -359,44 +359,46 @@ export default function ResultsPage() {
             </span>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <Button
             onClick={handleShareResults}
             variant="outline"
-            className="border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10"
+            size="sm"
+            className="border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10 text-xs sm:text-sm"
           >
-            <Share2 className="w-4 h-4 mr-2" />
-            Share
+            <Share2 className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Share</span>
           </Button>
           <Button
             onClick={handleDownloadPDF}
             variant="outline"
-            className="border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10"
+            size="sm"
+            className="border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10 text-xs sm:text-sm"
           >
-            <Download className="w-4 h-4 mr-2" />
-            Download PDF
+            <Download className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Download PDF</span>
           </Button>
           <Link href="/dashboard/analyze">
-            <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white">
-              <Sparkles className="w-4 h-4 mr-2" />
-              New Analysis
+            <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-xs sm:text-sm">
+              <Sparkles className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">New Analysis</span>
             </Button>
           </Link>
         </div>
       </div>
 
       <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm border-cyan-400/30 overflow-hidden">
-        <CardContent className="p-8">
-          <div className="flex items-center justify-between mb-6">
+        <CardContent className="p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
                 Overall Friction Score
               </h2>
               <p className="text-slate-400">{insights?.summary || 'Analysis complete'}</p>
             </div>
-            <div className="text-right">
+            <div className="text-center sm:text-right">
               <div
-                className={`text-6xl font-bold bg-gradient-to-r ${getScoreColor(
+                className={`text-5xl sm:text-6xl font-bold bg-gradient-to-r ${getScoreColor(
                   score
                 )} bg-clip-text text-transparent`}
               >
@@ -446,8 +448,8 @@ export default function ResultsPage() {
         </CardContent>
       </Card>
 
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white">Friction Points by Category</h2>
+      <div className="space-y-4 sm:space-y-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-white">Friction Points by Category</h2>
 
         {categorizedIssues.length === 0 ? (
           <Card className="bg-slate-800/50 backdrop-blur-sm border-green-400/20">
@@ -475,13 +477,13 @@ export default function ResultsPage() {
                   </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 {issues.map((issue, index) => (
                   <div
                     key={index}
-                    className="p-6 bg-slate-900/50 rounded-lg border border-slate-700 hover:border-cyan-400/30 transition-colors"
+                    className="p-4 sm:p-6 bg-slate-900/50 rounded-lg border border-slate-700 hover:border-cyan-400/30 transition-colors"
                   >
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0 mb-4">
                       <div className="flex items-center space-x-3">
                         <div
                           className={`p-2 rounded-lg ${
@@ -495,7 +497,7 @@ export default function ResultsPage() {
                           {getSeverityIcon(issue.severity)}
                         </div>
                         <div>
-                          <h4 className="text-lg font-semibold text-white">
+                          <h4 className="text-base sm:text-lg font-semibold text-white">
                             {issue.type}
                           </h4>
                         </div>
@@ -505,7 +507,7 @@ export default function ResultsPage() {
                       </Badge>
                     </div>
 
-                    <div className="space-y-4 ml-11">
+                    <div className="space-y-4 sm:ml-11">
                       <div>
                         <p className="text-sm font-medium text-slate-400 mb-2">
                           Issue:

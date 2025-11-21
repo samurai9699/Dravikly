@@ -160,23 +160,23 @@ export default function PricingPage() {
         </svg>
       </div>
 
-      <nav className="relative z-10 container mx-auto px-6 py-6">
+      <nav className="relative z-10 container mx-auto px-4 sm:px-6 py-6">
         <div className="flex justify-between items-center">
           <Link href="/">
             <div className="flex items-center space-x-2 cursor-pointer">
-              <Shield className="w-8 h-8 text-cyan-400" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              <Shield className="w-6 sm:w-8 h-6 sm:h-8 text-cyan-400" />
+              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                 FrictionKiller
               </span>
             </div>
           </Link>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Link href="/login">
-              <Button variant="ghost" className="text-white hover:text-cyan-400">
+              <Button variant="ghost" className="text-white hover:text-cyan-400 text-sm sm:text-base">
                 Sign In
               </Button>
             </Link>
-            <Link href="/signup">
+            <Link href="/signup" className="hidden sm:block">
               <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600">
                 Get Started
               </Button>
@@ -185,16 +185,16 @@ export default function PricingPage() {
         </div>
       </nav>
 
-      <main className="relative z-10 container mx-auto px-6 py-20">
+      <main className="relative z-10 container mx-auto px-4 sm:px-6 py-12 sm:py-20">
         <section className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-5xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-6">
               Choose Your{' '}
               <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                 Conversion Power
               </span>
             </h1>
-            <p className="text-xl text-slate-300 mb-8">
+            <p className="text-base sm:text-xl text-slate-300 mb-8">
               Simple, transparent pricing. Scale as you grow.
             </p>
 
@@ -219,7 +219,7 @@ export default function PricingPage() {
             )}
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
             {tiers.map((tier, index) => (
               <div
                 key={index}
@@ -339,19 +339,19 @@ export default function PricingPage() {
                 Our team is here to help you choose the perfect plan
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/contact">
+                <Link href="/contact" className="w-full sm:w-auto">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10"
+                    className="w-full sm:w-auto border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10"
                   >
                     Contact Sales
                   </Button>
                 </Link>
-                <Link href="/signup">
+                <Link href="/signup" className="w-full sm:w-auto">
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+                    className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
                   >
                     Start Free Trial
                     <ArrowRight className="ml-2" />

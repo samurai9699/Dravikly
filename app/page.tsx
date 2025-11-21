@@ -56,16 +56,16 @@ export default function Home() {
         </div>
       </nav>
 
-      <main className="relative z-10 container mx-auto px-6 py-20">
+      <main className="relative z-10 container mx-auto px-4 sm:px-6 py-12 sm:py-20">
         <section className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="space-y-8">
               <div className="inline-flex items-center space-x-2 px-4 py-2 bg-slate-800/50 border border-cyan-400/30 rounded-full">
                 <Zap className="w-4 h-4 text-cyan-400" />
                 <span className="text-sm text-cyan-400">AI-Powered Analysis</span>
               </div>
 
-              <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight">
                 Find the{' '}
                 <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   invisible friction
@@ -73,26 +73,26 @@ export default function Home() {
                 killing your conversions
               </h1>
 
-              <p className="text-xl text-slate-300 leading-relaxed">
+              <p className="text-lg sm:text-xl text-slate-300 leading-relaxed">
                 AI-powered analysis reveals exactly why visitors leave without buying.
                 Get actionable insights in minutes, not weeks.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/signup">
+                <Link href="/signup" className="w-full sm:w-auto">
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-lg px-8 py-6 group"
+                    className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 group"
                   >
                     Analyze My Site Free
                     <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link href="#demo">
+                <Link href="#demo" className="w-full sm:w-auto">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10 text-lg px-8 py-6"
+                    className="w-full sm:w-auto border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6"
                   >
                     Watch Demo
                   </Button>
