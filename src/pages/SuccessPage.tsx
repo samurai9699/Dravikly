@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSubscription } from '../hooks/useSubscription'
 import { Button } from '../components/ui/Button'
-import { CheckCircle, Crown } from 'lucide-react'
+import { CircleCheck as CheckCircle, Crown } from 'lucide-react'
 
 interface SuccessPageProps {
   onNavigate: (page: string) => void
