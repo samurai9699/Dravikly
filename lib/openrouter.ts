@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
+const OPENROUTER_API_URL = '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';
 const MODEL = 'x-ai/grok-beta';
 
 export interface FrictionIssue {
