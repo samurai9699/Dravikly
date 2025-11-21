@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
+import { UsageIndicator } from '@/components/dashboard/usage-indicator';
 
 interface Analysis {
   id: string;
@@ -156,6 +157,11 @@ export default function DashboardPage() {
           Let's eliminate some friction from your funnels
         </p>
       </div>
+
+      <UsageIndicator
+        tier={subscription?.tier || 'FREE'}
+        analysesUsedToday={subscription?.analyses_used_today || 0}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-slate-800/50 backdrop-blur-sm border-cyan-400/20 hover:border-cyan-400/40 transition-colors">
