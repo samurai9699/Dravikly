@@ -6,17 +6,21 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 
 export default function Home() {
-  const [founderCount, setFounderCount] = useState(500);
+  const [founderCount, setFounderCount] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setFounderCount((prev) => {
-        const next = prev + Math.floor(Math.random() * 3);
-        return next > 550 ? 500 : next;
-      });
-    }, 3000);
+    async function fetchStats() {
+      try {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+        setFounderCount(data.total_users || 0);
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+        setFounderCount(500);
+      }
+    }
 
-    return () => clearInterval(interval);
+    fetchStats();
   }, []);
 
   return (
@@ -106,7 +110,11 @@ export default function Home() {
                   <div className="flex items-center space-x-2">
                     <Users className="w-4 h-4 text-cyan-400" />
                     <span className="font-semibold">
-                      Trusted by {founderCount}+ founders
+                      {founderCount > 0 ? (
+                        <>Join {founderCount}+ founders</>
+                      ) : (
+                        <>Join 500+ founders</>
+                      )}
                     </span>
                   </div>
                 </div>
