@@ -1,10 +1,73 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import axios from 'axios';
+import { analyzeWebsiteFriction } from '@/lib/openrouter';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
+function isValidUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function extractForms(html: string): string {
+  const formRegex = /<form[\s\S]*?<\/form>/gi;
+  const forms = html.match(formRegex);
+
+  if (!forms || forms.length === 0) {
+    return 'No forms found on the page.';
+  }
+
+  return forms.join('\n\n');
+}
+
+async function fetchWebsiteHtml(url: string): Promise<string> {
+  try {
+    const response = await axios.get(url, {
+      timeout: 15000,
+      maxRedirects: 5,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+      },
+    });
+
+    if (typeof response.data !== 'string') {
+      throw new Error('Invalid response: Expected HTML content');
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.code === 'ECONNABORTED') {
+        throw new Error('Request timeout: Website took too long to respond');
+      }
+      if (error.response?.status === 403) {
+        throw new Error('Access denied: Website blocked the request');
+      }
+      if (error.response?.status === 404) {
+        throw new Error('Page not found: The URL does not exist');
+      }
+      if (error.response?.status && error.response.status >= 500) {
+        throw new Error('Website error: The server returned an error');
+      }
+      throw new Error(`Failed to fetch website: ${error.message}`);
+    }
+    throw error;
+  }
+}
 
 export async function POST(request: Request) {
+  let analysisId: string | null = null;
+  let supabase: any = null;
+
   try {
     const { url } = await request.json();
 
@@ -15,8 +78,15 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!isValidUrl(url)) {
+      return NextResponse.json(
+        { error: 'Invalid URL format. Please provide a valid HTTP or HTTPS URL.' },
+        { status: 400 }
+      );
+    }
+
     const cookieStore = cookies();
-    const supabase = createServerClient(
+    supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -38,7 +108,7 @@ export async function POST(request: Request) {
 
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized. Please log in to continue.' },
         { status: 401 }
       );
     }
@@ -51,7 +121,7 @@ export async function POST(request: Request) {
 
     if (subError || !subscription) {
       return NextResponse.json(
-        { error: 'Subscription not found' },
+        { error: 'Subscription not found. Please contact support.' },
         { status: 404 }
       );
     }
@@ -81,7 +151,7 @@ export async function POST(request: Request) {
 
     if (analysesUsed >= limit) {
       return NextResponse.json(
-        { error: 'Daily limit reached. Please upgrade your plan.' },
+        { error: 'Daily limit reached. Please upgrade your plan to continue.' },
         { status: 429 }
       );
     }
@@ -98,10 +168,12 @@ export async function POST(request: Request) {
 
     if (analysisError || !analysis) {
       return NextResponse.json(
-        { error: 'Failed to create analysis' },
+        { error: 'Failed to create analysis record. Please try again.' },
         { status: 500 }
       );
     }
+
+    analysisId = analysis.id;
 
     await supabase
       .from('subscriptions')
@@ -115,62 +187,93 @@ export async function POST(request: Request) {
       .update({
         status: 'processing',
       })
-      .eq('id', analysis.id);
+      .eq('id', analysisId);
 
-    setTimeout(async () => {
-      const frictionScore = Math.floor(Math.random() * 100);
-
-      const insights = {
-        summary: `Analyzed ${url} and identified ${Math.floor(Math.random() * 10) + 1} friction points`,
-        friction_points: [
-          {
-            type: 'Form Complexity',
-            severity: 'high',
-            description: 'Too many required fields in the signup form',
-            recommendation: 'Reduce required fields to essential information only',
-          },
-          {
-            type: 'Trust Signals',
-            severity: 'medium',
-            description: 'Missing security badges and testimonials',
-            recommendation: 'Add SSL badges and customer testimonials',
-          },
-          {
-            type: 'Mobile Experience',
-            severity: 'low',
-            description: 'Some buttons are difficult to tap on mobile',
-            recommendation: 'Increase button sizes for better mobile usability',
-          },
-        ],
-        recommendations: [
-          'Implement progressive form disclosure',
-          'Add clear value proposition above the fold',
-          'Include social proof elements',
-          'Optimize page load speed',
-        ],
-      };
-
-      await supabase
-        .from('analyses')
-        .update({
-          status: 'completed',
-          friction_score: frictionScore,
-          insights: insights,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', analysis.id);
-    }, 8000);
+    if (analysisId) {
+      processAnalysis(analysisId, url, supabase).catch((error) => {
+        console.error('Background analysis error:', error);
+      });
+    }
 
     return NextResponse.json({
       success: true,
-      analysisId: analysis.id,
+      analysisId: analysisId,
       message: 'Analysis started successfully',
     });
   } catch (error) {
     console.error('Analysis error:', error);
+
+    if (analysisId && supabase) {
+      try {
+        await supabase
+          .from('analyses')
+          .update({
+            status: 'failed',
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', analysisId);
+      } catch (updateError) {
+        console.error('Failed to update analysis status:', updateError);
+      }
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error. Please try again later.' },
       { status: 500 }
     );
+  }
+}
+
+async function processAnalysis(analysisId: string, url: string, supabase: any) {
+  try {
+    const html = await fetchWebsiteHtml(url);
+
+    const forms = extractForms(html);
+
+    const relevantHtml = html.slice(0, 50000);
+
+    const aiAnalysis = await analyzeWebsiteFriction(url, relevantHtml);
+
+    const insights = {
+      summary: aiAnalysis.summary,
+      friction_points: aiAnalysis.issues.map((issue) => ({
+        type: issue.type,
+        severity: issue.severity,
+        description: issue.description,
+        recommendation: issue.fix,
+      })),
+      forms_detected: forms !== 'No forms found on the page.',
+      forms_count: forms === 'No forms found on the page.' ? 0 : (forms.match(/<form/gi) || []).length,
+    };
+
+    await supabase
+      .from('analyses')
+      .update({
+        status: 'completed',
+        friction_score: Math.min(100, Math.max(0, aiAnalysis.score)),
+        insights: insights,
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', analysisId);
+  } catch (error) {
+    console.error('Processing error:', error);
+
+    let errorMessage = 'Unknown error occurred';
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    await supabase
+      .from('analyses')
+      .update({
+        status: 'failed',
+        insights: {
+          error: errorMessage,
+          summary: 'Analysis failed',
+        },
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', analysisId);
   }
 }
