@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Check, Shield, ArrowRight, Zap, TrendingUp, Crown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Check, Shield, ArrowRight, Zap, TrendingUp, Crown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -11,9 +12,43 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { toast } from 'sonner';
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleCheckout = async (tier: string) => {
+    setCheckoutLoading(tier);
+
+    try {
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tier: tier.toLowerCase() }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error('Please log in to upgrade your plan');
+          router.push('/login');
+          return;
+        }
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to start checkout');
+      setCheckoutLoading(null);
+    }
+  };
 
   const tiers = [
     {
@@ -234,8 +269,20 @@ export default function PricingPage() {
                     ))}
                   </ul>
 
-                  <Link href={tier.ctaLink} className="block">
+                  {tier.name === 'Free' ? (
+                    <Link href={tier.ctaLink} className="block">
+                      <Button
+                        className="w-full group/btn bg-slate-700 hover:bg-slate-600 text-white"
+                        size="lg"
+                      >
+                        {tier.cta}
+                        <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
+                  ) : (
                     <Button
+                      onClick={() => handleCheckout(tier.name)}
+                      disabled={checkoutLoading !== null}
                       className={`w-full group/btn ${
                         tier.highlighted
                           ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white'
@@ -243,10 +290,19 @@ export default function PricingPage() {
                       }`}
                       size="lg"
                     >
-                      {tier.cta}
-                      <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                      {checkoutLoading === tier.name ? (
+                        <>
+                          <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          {tier.cta}
+                          <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                        </>
+                      )}
                     </Button>
-                  </Link>
+                  )}
                 </div>
               </div>
             ))}
