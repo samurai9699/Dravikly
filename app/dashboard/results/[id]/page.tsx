@@ -177,13 +177,38 @@ export default function ResultsPage() {
     toast.success('Link copied to clipboard!');
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (tier === 'FREE') {
       toast.error('Upgrade to PRO or ULTRA to download PDF reports');
       router.push('/pricing');
       return;
     }
-    toast.info('PDF download feature coming soon!');
+
+    try {
+      toast.info('Generating PDF...');
+
+      const response = await fetch(`/api/export-pdf/${analysisId}`);
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `friction-analysis-${analysisId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to download PDF');
+    }
   };
 
   const categorizeIssues = (frictionPoints: FrictionPoint[]) => {
