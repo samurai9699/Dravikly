@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, Shield, ArrowRight, Zap, TrendingUp, Crown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,16 +13,44 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { toast } from 'sonner';
+import { trackEvent } from '@/lib/track-event';
+import { createClient } from '@/lib/supabase/client';
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [currentTier, setCurrentTier] = useState('FREE');
   const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const loadUserTier = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('tier')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (subscription) {
+        setCurrentTier(subscription.tier);
+      }
+    };
+
+    loadUserTier();
+  }, [supabase]);
 
   const handleCheckout = async (tier: string) => {
     setCheckoutLoading(tier);
 
     try {
+      await trackEvent('upgrade_clicked', {
+        from_tier: currentTier,
+        to_tier: tier.toUpperCase(),
+      });
+
       const response = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: {

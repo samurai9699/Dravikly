@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import axios from 'axios';
 import { analyzeWebsiteFriction } from '@/lib/openrouter';
+import { trackEventServer } from '@/lib/track-event-server';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -175,6 +176,8 @@ export async function POST(request: Request) {
 
     analysisId = analysis.id;
 
+    await trackEventServer('analysis_started', { url }, user.id);
+
     await supabase
       .from('subscriptions')
       .update({
@@ -225,6 +228,7 @@ export async function POST(request: Request) {
 }
 
 async function processAnalysis(analysisId: string, url: string, supabase: any) {
+  const startTime = Date.now();
   try {
     const html = await fetchWebsiteHtml(url);
 
@@ -246,6 +250,8 @@ async function processAnalysis(analysisId: string, url: string, supabase: any) {
       forms_count: forms === 'No forms found on the page.' ? 0 : (forms.match(/<form/gi) || []).length,
     };
 
+    const duration = Math.round((Date.now() - startTime) / 1000);
+
     await supabase
       .from('analyses')
       .update({
@@ -255,6 +261,16 @@ async function processAnalysis(analysisId: string, url: string, supabase: any) {
         completed_at: new Date().toISOString(),
       })
       .eq('id', analysisId);
+
+    const { data: analysis } = await supabase
+      .from('analyses')
+      .select('user_id')
+      .eq('id', analysisId)
+      .single();
+
+    if (analysis?.user_id) {
+      await trackEventServer('analysis_completed', { url, duration }, analysis.user_id);
+    }
   } catch (error) {
     console.error('Processing error:', error);
 

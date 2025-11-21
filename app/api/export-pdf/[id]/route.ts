@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { jsPDF } from 'jspdf';
+import { trackEventServer } from '@/lib/track-event-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -356,6 +357,8 @@ export async function GET(
     }
 
     const pdfBuffer = generatePDF(analysis as Analysis);
+
+    await trackEventServer('pdf_downloaded', { analysis_id: analysisId }, user.id);
 
     const sanitizedUrl = analysis.url
       .replace(/^https?:\/\//, '')
