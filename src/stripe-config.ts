@@ -16,8 +16,8 @@ export const stripeProducts: StripeProduct[] = [
     name: 'ULTRA',
     description: 'Premium subscription with all features included',
     price: 99.00,
-    currency: 'eur',
-    currencySymbol: '€',
+    currency: 'usd',
+    currencySymbol: '$',
     mode: 'subscription'
   },
   {
