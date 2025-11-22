@@ -43,7 +43,7 @@ export default function GuidePage() {
                 <div className="flex items-center space-x-2 cursor-pointer">
                   <Shield className="w-8 h-8 text-cyan-400" />
                   <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                    FrictionKiller
+                    Dravikly
                   </span>
                 </div>
               </Link>
@@ -59,7 +59,7 @@ export default function GuidePage() {
         <main className="max-w-7xl mx-auto px-6 py-16">
           <div className="text-center mb-16">
             <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-              FrictionKiller Guide
+              Dravikly Guide
             </h1>
             <p className="text-xl text-slate-300 max-w-3xl mx-auto">
               Learn how to use AI-powered friction analysis to optimize your conversion funnels and boost revenue
@@ -72,7 +72,7 @@ export default function GuidePage() {
                 <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center">
                   <Target className="w-6 h-6 text-cyan-400" />
                 </div>
-                <h2 className="text-3xl font-bold">How to Use FrictionKiller</h2>
+                <h2 className="text-3xl font-bold">How to Use Dravikly</h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -441,7 +441,7 @@ export default function GuidePage() {
 
               <div className="bg-slate-800/50 backdrop-blur-sm border border-cyan-400/20 rounded-lg p-8 mb-8">
                 <p className="text-slate-300 mb-6">
-                  FrictionKiller rates your page on a scale from <strong>0-100</strong>, where lower scores indicate less friction. Here's how to understand your score:
+                  Dravikly rates your page on a scale from <strong>0-100</strong>, where lower scores indicate less friction. Here's how to understand your score:
                 </p>
 
                 <div className="space-y-4">
@@ -677,7 +677,7 @@ export default function GuidePage() {
                     How accurate is the AI analysis?
                   </AccordionTrigger>
                   <AccordionContent className="text-slate-300">
-                    Our AI is trained on millions of conversion optimization case studies and uses state-of-the-art language models (GPT-4, Claude 3.5). While no automated tool is 100% accurate, our analysis typically identifies 80-90% of major friction points. We recommend combining AI insights with user testing for best results.
+                    Our AI is trained on millions of conversion optimization case studies and uses state-of-the-art language models (GPT-5, Claude 4.5). While no automated tool is 100% accurate, our analysis typically identifies 80-90% of major friction points. We recommend combining AI insights with user testing for best results.
                   </AccordionContent>
                 </AccordionItem>
 
@@ -795,7 +795,7 @@ export default function GuidePage() {
               <div className="flex items-center space-x-2">
                 <Shield className="w-6 h-6 text-cyan-400" />
                 <span className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                  FrictionKiller
+                  Dravikly
                 </span>
               </div>
               <div className="flex space-x-6 text-sm text-slate-400">
@@ -810,7 +810,7 @@ export default function GuidePage() {
                 </a>
               </div>
               <p className="text-sm text-slate-400">
-                © 2025 FrictionKiller. All rights reserved.
+                © 2025 Dravikly. All rights reserved.
               </p>
             </div>
           </div>
