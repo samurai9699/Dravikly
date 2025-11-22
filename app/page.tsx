@@ -138,7 +138,7 @@ export default function Home() {
                     <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-slate-400">Friction Score</span>
-                        <span className="text-2xl font-bold text-cyan-400">73/100</span>
+                        <span className="text-2xl font-bold text-cyan-400">74/100</span>
                       </div>
                       <div className="w-full bg-slate-700 rounded-full h-2">
                         <div
@@ -442,7 +442,7 @@ export default function Home() {
 
       <footer className="relative z-10 container mx-auto px-6 py-12 mt-32 border-t border-slate-800">
         <div className="text-center text-slate-400">
-          <p>&copy; 2025 FrictionKiller. Built for conversion-obsessed founders.</p>
+          <p>&copy; 2025 Dravikly. Built for conversion-obsessed founders.</p>
         </div>
       </footer>
     </div>
