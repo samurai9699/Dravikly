@@ -393,7 +393,7 @@ export default function PricingPage() {
 
       <footer className="relative z-10 container mx-auto px-6 py-12 mt-32 border-t border-slate-800">
         <div className="text-center text-slate-400">
-          <p>&copy; 2025 FrictionKiller. Built for conversion-obsessed founders.</p>
+          <p>&copy; 2025 Dravikly. Built for conversion-obsessed founders.</p>
         </div>
       </footer>
     </div>
