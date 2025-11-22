@@ -1,8 +1,8 @@
-# FrictionKiller - AI-Powered Customer Friction Detector
+# Dravikly - AI-Powered Customer Friction Detector
 
 > Analyze your conversion funnels and detect friction points with AI-powered insights.
 
-FrictionKiller uses advanced AI to analyze your landing pages, signup forms, and checkout flows to identify exactly what's preventing users from converting. Get actionable recommendations to eliminate friction and boost conversions.
+Dravikly uses advanced AI to analyze your landing pages, signup forms, and checkout flows to identify exactly what's preventing users from converting. Get actionable recommendations to eliminate friction and boost conversions.
 
 ---
 
