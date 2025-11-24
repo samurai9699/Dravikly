@@ -58,16 +58,19 @@ async function fetchWebsiteHtml(url: string): Promise<string> {
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      console.error('Fetch error:', { url, status, message: error.message });
+
       if (error.code === 'ECONNABORTED') {
         throw new Error('Request timeout: Website took too long to respond');
       }
-      if (error.response?.status === 403) {
+      if (status === 403) {
         throw new Error('Access denied: Website has anti-bot protection. Try a different URL or contact support for help analyzing protected sites.');
       }
-      if (error.response?.status === 404) {
+      if (status === 404) {
         throw new Error('Page not found: The URL does not exist');
       }
-      if (error.response?.status && error.response.status >= 500) {
+      if (status && status >= 500) {
         throw new Error('Website error: The server returned an error');
       }
       throw new Error(`Failed to fetch website: ${error.message}`);
