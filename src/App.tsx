@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { Header } from './components/Header'
-import { HomePage } from './pages/HomePage'
 import { AuthPage } from './pages/AuthPage'
 import { PricingPage } from './pages/PricingPage'
 import { SuccessPage } from './pages/SuccessPage'
