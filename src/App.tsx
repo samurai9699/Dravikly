@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { Header } from './components/Header'
-import { AuthPage } from './pages/AuthPage'
-import { PricingPage } from './pages/PricingPage'
-import { SuccessPage } from './pages/SuccessPage'
+import { AuthPage } from './pages-old/AuthPage'
+import { PricingPage } from './pages-old/PricingPage'
+import { SuccessPage } from './pages-old/SuccessPage'
 
 function App() {
   const { user, loading } = useAuth()
