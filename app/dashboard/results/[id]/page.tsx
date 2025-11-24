@@ -57,12 +57,12 @@ export default function ResultsPage() {
   const supabase = createClient();
   
   // Safe parameter extraction
-  const analysisId = typeof params.id === 'string' 
-    ? params.id 
-    : Array.isArray(params.id) 
-    ? params.id[0] 
-    : null;
-
+  const analysisId = params?.id
+     ? Array.isArray(params.id)
+     ? params.id[0]
+     : params.id
+     : null;
+  
   useEffect(() => {
     // Early return if no valid ID
     if (!analysisId) {
