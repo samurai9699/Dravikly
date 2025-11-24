@@ -55,7 +55,7 @@ export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get('tab') || 'account';
+  const initialTab = searchParams?.get('tab') ?? 'account';
   const supabase = createClient();
 
   useEffect(() => {
