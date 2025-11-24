@@ -1,6 +1,5 @@
 'use client';
 
-import { useParams } from "next/navigation";
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -56,10 +55,6 @@ export default function ResultsPage() {
   const router = useRouter();
   const params = useParams();
   const supabase = createClient();
-
-  if (!params || !params.id) {
-  return <div>Missing analysis id</div>;
-}
   const analysisId = params.id as string;
 
   useEffect(() => {
