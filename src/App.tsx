@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { Header } from './components/Header'
-import { AuthPage } from './pages-old/AuthPage'
-import { PricingPage } from './pages-old/PricingPage'
-import { SuccessPage } from './pages-old/SuccessPage'
+import { HomePage } from '../components/HomePage'
+import { AuthPage } from '../components/AuthPage'
+import { PricingPage } from '../components/PricingPage'
+import { SuccessPage } from '../components/SuccessPage'
 
 function App() {
   const { user, loading } = useAuth()
