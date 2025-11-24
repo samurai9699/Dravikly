@@ -55,9 +55,22 @@ export default function ResultsPage() {
   const router = useRouter();
   const params = useParams();
   const supabase = createClient();
-  const analysisId = params.id as string;
+  
+  // Safe parameter extraction
+  const analysisId = typeof params.id === 'string' 
+    ? params.id 
+    : Array.isArray(params.id) 
+    ? params.id[0] 
+    : null;
 
   useEffect(() => {
+    // Early return if no valid ID
+    if (!analysisId) {
+      setError('Invalid analysis ID');
+      setLoading(false);
+      return;
+    }
+
     const loadAnalysis = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -182,6 +195,11 @@ export default function ResultsPage() {
   const handleDownloadPDF = async () => {
     if (tier === 'FREE') {
       setShowUpgradeModal(true);
+      return;
+    }
+
+    if (!analysisId) {
+      toast.error('Invalid analysis ID');
       return;
     }
 
