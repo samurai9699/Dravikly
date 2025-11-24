@@ -137,7 +137,7 @@ export default function SignupPage() {
           <div className="flex items-center justify-center space-x-2 mb-8 cursor-pointer">
             <Shield className="w-10 h-10 text-cyan-400" />
             <span className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-              FrictionKiller
+              Dravikly
             </span>
           </div>
         </Link>
