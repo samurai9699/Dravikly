@@ -34,9 +34,20 @@ async function fetchWebsiteHtml(url: string): Promise<string> {
       timeout: 15000,
       maxRedirects: 5,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"macOS"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
       },
     });
 
@@ -51,7 +62,7 @@ async function fetchWebsiteHtml(url: string): Promise<string> {
         throw new Error('Request timeout: Website took too long to respond');
       }
       if (error.response?.status === 403) {
-        throw new Error('Access denied: Website blocked the request');
+        throw new Error('Access denied: Website has anti-bot protection. Try a different URL or contact support for help analyzing protected sites.');
       }
       if (error.response?.status === 404) {
         throw new Error('Page not found: The URL does not exist');
@@ -179,13 +190,6 @@ export async function POST(request: Request) {
     await trackEventServer('analysis_started', { url }, user.id);
 
     await supabase
-      .from('subscriptions')
-      .update({
-        analyses_used_today: analysesUsed + 1,
-      })
-      .eq('user_id', user.id);
-
-    await supabase
       .from('analyses')
       .update({
         status: 'processing',
@@ -193,7 +197,7 @@ export async function POST(request: Request) {
       .eq('id', analysisId);
 
     if (analysisId) {
-      processAnalysis(analysisId, url, supabase).catch((error) => {
+      processAnalysis(analysisId, url, supabase, user.id, analysesUsed).catch((error) => {
         console.error('Background analysis error:', error);
       });
     }
@@ -227,7 +231,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function processAnalysis(analysisId: string, url: string, supabase: any) {
+async function processAnalysis(analysisId: string, url: string, supabase: any, userId: string, analysesUsed: number) {
   const startTime = Date.now();
   try {
     const html = await fetchWebsiteHtml(url);
@@ -262,15 +266,15 @@ async function processAnalysis(analysisId: string, url: string, supabase: any) {
       })
       .eq('id', analysisId);
 
-    const { data: analysis } = await supabase
-      .from('analyses')
-      .select('user_id')
-      .eq('id', analysisId)
-      .single();
+    // Only increment counter on successful completion
+    await supabase
+      .from('subscriptions')
+      .update({
+        analyses_used_today: analysesUsed + 1,
+      })
+      .eq('user_id', userId);
 
-    if (analysis?.user_id) {
-      await trackEventServer('analysis_completed', { url, duration }, analysis.user_id);
-    }
+    await trackEventServer('analysis_completed', { url, duration }, userId);
   } catch (error) {
     console.error('Processing error:', error);
 
