@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Zap, Shield, TrendingUp, Users, Scan, Wrench, FileText, CheckCircle, Check, ShoppingCart, UserPlus, Mail, DollarSign, HelpCircle, ChevronDown } from 'lucide-react';
+import { ArrowRight, Zap, TrendingUp, Users, Scan, Wrench, FileText, CheckCircle, Check, ShoppingCart, UserPlus, Mail, DollarSign, HelpCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 
@@ -155,8 +155,41 @@ export default function Home() {
 
       <nav className="relative z-10 container mx-auto px-6 py-6">
         <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Shield className="w-8 h-8 text-cyan-400" />
+          <div className="flex items-center space-x-3">
+            <div className="relative group">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-transform group-hover:scale-110">
+                <defs>
+                  <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#06b6d4" />
+                    <stop offset="100%" stopColor="#3b82f6" />
+                  </linearGradient>
+                </defs>
+                {/* Outer circle representing analysis/scanning */}
+                <circle cx="20" cy="20" r="18" stroke="url(#logo-gradient)" strokeWidth="2" fill="none" opacity="0.3" />
+                {/* Inner dynamic shape representing optimization/flow */}
+                <path
+                  d="M 12 20 Q 16 12, 20 20 T 28 20"
+                  stroke="url(#logo-gradient)"
+                  strokeWidth="2.5"
+                  fill="none"
+                  strokeLinecap="round"
+                  className="animate-pulse"
+                />
+                {/* Data points representing insights */}
+                <circle cx="12" cy="20" r="2.5" fill="url(#logo-gradient)" />
+                <circle cx="20" cy="20" r="2.5" fill="url(#logo-gradient)" />
+                <circle cx="28" cy="20" r="2.5" fill="url(#logo-gradient)" />
+                {/* Upward arrow representing conversion lift */}
+                <path
+                  d="M 20 28 L 20 16 M 16 20 L 20 16 L 24 20"
+                  stroke="url(#logo-gradient)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.8"
+                />
+              </svg>
+            </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
               Dravikly
             </span>
@@ -207,23 +240,31 @@ export default function Home() {
                     <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link href="#demo" className="w-full sm:w-auto">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6"
-                  >
-                    Watch Demo
-                  </Button>
-                </Link>
+
               </div>
 
               <div className="flex items-center space-x-3 pt-4">
                 <div className="flex -space-x-2">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 border-2 border-slate-900" />
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 border-2 border-slate-900" />
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 border-2 border-slate-900" />
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-red-500 border-2 border-slate-900" />
+                  <img
+                    src="https://i.pravatar.cc/150?img=51"
+                    alt="User"
+                    className="w-10 h-10 rounded-full border-2 border-slate-900 object-cover"
+                  />
+                  <img
+                    src="https://i.pravatar.cc/150?img=47"
+                    alt="User"
+                    className="w-10 h-10 rounded-full border-2 border-slate-900 object-cover"
+                  />
+                  <img
+                    src="https://i.pravatar.cc/150?img=32"
+                    alt="User"
+                    className="w-10 h-10 rounded-full border-2 border-slate-900 object-cover"
+                  />
+                  <img
+                    src="https://i.pravatar.cc/150?img=59"
+                    alt="User"
+                    className="w-10 h-10 rounded-full border-2 border-slate-900 object-cover"
+                  />
                 </div>
                 <div className="text-slate-300">
                   <div className="flex items-center space-x-2">
@@ -543,21 +584,21 @@ export default function Home() {
                 quote: "Dravikly found 7 friction points I completely missed. Fixed them and saw a 34% lift in conversions within a week.",
                 author: "Sarah Chen",
                 role: "Founder, ConvertKit Clone",
-                avatar: "from-cyan-400 to-blue-500",
+                avatar: "https://i.pravatar.cc/150?img=44",
                 rating: 5,
               },
               {
                 quote: "The AI insights are scary accurate. It's like having a CRO expert on call 24/7. Worth every penny.",
                 author: "Marcus Rodriguez",
                 role: "Head of Growth, SaaS Startup",
-                avatar: "from-blue-400 to-purple-500",
+                avatar: "https://i.pravatar.cc/150?img=13",
                 rating: 5,
               },
               {
                 quote: "We were bleeding users at checkout. One analysis revealed our form was way too long. Cut it by 60% and conversions doubled.",
                 author: "Emily Watson",
                 role: "CEO, E-commerce Brand",
-                avatar: "from-purple-400 to-pink-500",
+                avatar: "https://i.pravatar.cc/150?img=49",
                 rating: 5,
               },
             ].map((testimonial, index) => (
@@ -580,9 +621,11 @@ export default function Home() {
                   "{testimonial.quote}"
                 </p>
                 <div className="flex items-center space-x-3">
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${testimonial.avatar} flex items-center justify-center text-white font-bold text-lg`}>
-                    {testimonial.author.split(' ').map(n => n[0]).join('')}
-                  </div>
+                  <img
+                    src={testimonial.avatar}
+                    alt={testimonial.author}
+                    className="w-12 h-12 rounded-full object-cover border-2 border-cyan-400/30"
+                  />
                   <div>
                     <div className="font-semibold text-white">{testimonial.author}</div>
                     <div className="text-sm text-slate-400">{testimonial.role}</div>
@@ -833,9 +876,34 @@ export default function Home() {
                     <th className="text-left p-6 text-slate-400 font-medium">Feature</th>
                     <th className="text-center p-6">
                       <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mb-2 animate-pulse">
-                          <Shield className="w-6 h-6 text-white" />
-                        </div>
+                        <svg width="48" height="48" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-2">
+                          <defs>
+                            <linearGradient id="logo-gradient-table" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#06b6d4" />
+                              <stop offset="100%" stopColor="#3b82f6" />
+                            </linearGradient>
+                          </defs>
+                          <circle cx="20" cy="20" r="18" stroke="url(#logo-gradient-table)" strokeWidth="2" fill="none" opacity="0.3" />
+                          <path
+                            d="M 12 20 Q 16 12, 20 20 T 28 20"
+                            stroke="url(#logo-gradient-table)"
+                            strokeWidth="2.5"
+                            fill="none"
+                            strokeLinecap="round"
+                            className="animate-pulse"
+                          />
+                          <circle cx="12" cy="20" r="2.5" fill="url(#logo-gradient-table)" />
+                          <circle cx="20" cy="20" r="2.5" fill="url(#logo-gradient-table)" />
+                          <circle cx="28" cy="20" r="2.5" fill="url(#logo-gradient-table)" />
+                          <path
+                            d="M 20 28 L 20 16 M 16 20 L 20 16 L 24 20"
+                            stroke="url(#logo-gradient-table)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            opacity="0.8"
+                          />
+                        </svg>
                         <span className="font-bold text-white">Dravikly</span>
                       </div>
                     </th>
