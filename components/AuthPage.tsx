@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { AuthForm } from './AuthForm'
+import { AuthForm } from '@/src/components/AuthForm'
 
 export function AuthPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
