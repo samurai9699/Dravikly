@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useSubscription } from '../src/hooks/useSubscription'
-import { Button } from './ui/Button'
+import { Button } from './ui/button'
 import { CircleCheck as CheckCircle, Crown } from 'lucide-react'
 
 interface SuccessPageProps {
