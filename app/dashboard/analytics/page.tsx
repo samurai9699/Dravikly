@@ -87,7 +87,7 @@ async function getAnalytics() {
 }
 
 export default async function AnalyticsPage() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -228,11 +228,11 @@ export default async function AnalyticsPage() {
                   <span className="text-lg font-semibold">
                     {analytics.totalUsers > 0
                       ? (
-                          ((analytics.tierBreakdown.PRO || 0) +
-                            (analytics.tierBreakdown.ULTRA || 0)) /
-                          analytics.totalUsers *
-                          100
-                        ).toFixed(1)
+                        ((analytics.tierBreakdown.PRO || 0) +
+                          (analytics.tierBreakdown.ULTRA || 0)) /
+                        analytics.totalUsers *
+                        100
+                      ).toFixed(1)
                       : 0}
                     %
                   </span>
