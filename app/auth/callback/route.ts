@@ -7,9 +7,10 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
+  const next = requestUrl.searchParams.get('next') || '/dashboard';
 
   if (code) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -28,24 +29,44 @@ export async function GET(request: Request) {
       }
     );
 
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    try {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error && data.user) {
-      const { data: existingSubscription } = await supabase
-        .from('subscriptions')
-        .select('id')
-        .eq('user_id', data.user.id)
-        .maybeSingle();
-
-      if (!existingSubscription) {
-        await supabase.from('subscriptions').insert({
-          user_id: data.user.id,
-          tier: 'FREE',
-          status: 'active',
-        });
+      if (error) {
+        console.error('Auth callback error:', error);
+        return NextResponse.redirect(new URL('/login?error=auth_failed', requestUrl.origin));
       }
+
+      if (data.user) {
+        // Check if subscription already exists
+        const { data: existingSubscription } = await supabase
+          .from('subscriptions')
+          .select('id')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+
+        if (!existingSubscription) {
+          const { error: subscriptionError } = await supabase
+            .from('subscriptions')
+            .insert({
+              user_id: data.user.id,
+              tier: 'FREE',
+              status: 'active',
+            });
+
+          if (subscriptionError) {
+            console.error('Error creating subscription:', subscriptionError);
+          }
+        }
+
+        return NextResponse.redirect(new URL(next, requestUrl.origin));
+      }
+    } catch (err) {
+      console.error('Unexpected auth callback error:', err);
+      return NextResponse.redirect(new URL('/login?error=unexpected', requestUrl.origin));
     }
   }
 
-  return NextResponse.redirect(new URL('/dashboard', requestUrl.origin));
+  // No code provided, redirect to login
+  return NextResponse.redirect(new URL('/login', requestUrl.origin));
 }
