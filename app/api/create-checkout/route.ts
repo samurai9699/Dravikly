@@ -47,22 +47,39 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { tier } = body;
+    const { tier, billingCadence } = body as {
+      tier?: string;
+      billingCadence?: string;
+    };
 
-    if (!tier || !['pro', 'ultra'].includes(tier.toLowerCase())) {
+    const normalizedTier = tier?.toLowerCase();
+    const normalizedCadence = billingCadence === 'annual' ? 'annual' : 'monthly';
+
+    if (!normalizedTier || !['pro', 'ultra'].includes(normalizedTier)) {
       return NextResponse.json(
         { error: 'Invalid tier. Must be "pro" or "ultra".' },
         { status: 400 }
       );
     }
 
-    const priceId = tier.toLowerCase() === 'pro'
-      ? process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID
-      : process.env.NEXT_PUBLIC_STRIPE_ULTRA_PRICE_ID;
+    const priceMap = {
+      pro: {
+        monthly: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
+        annual: process.env.NEXT_PUBLIC_STRIPE_PRO_ANNUAL_PRICE_ID,
+      },
+      ultra: {
+        monthly: process.env.NEXT_PUBLIC_STRIPE_ULTRA_PRICE_ID,
+        annual: process.env.NEXT_PUBLIC_STRIPE_ULTRA_ANNUAL_PRICE_ID,
+      },
+    } as const;
+
+    const priceId = priceMap[normalizedTier as 'pro' | 'ultra'][normalizedCadence];
 
     if (!priceId) {
       return NextResponse.json(
-        { error: 'Stripe price ID not configured for this tier.' },
+        {
+          error: `Stripe price ID not configured for the ${normalizedCadence} ${normalizedTier} plan.`,
+        },
         { status: 503 }
       );
     }
@@ -83,7 +100,8 @@ export async function POST(request: NextRequest) {
       cancel_url: `${origin}/pricing`,
       metadata: {
         user_id: user.id,
-        tier: tier.toUpperCase(),
+        tier: normalizedTier.toUpperCase(),
+        billing_cadence: normalizedCadence,
       },
     });
 
