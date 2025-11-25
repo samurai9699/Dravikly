@@ -9,7 +9,6 @@ import {
   Clock,
   Settings,
   CreditCard,
-  Shield,
   Menu,
   X,
   LogOut,
@@ -17,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
+import { Logo } from '@/components/Logo';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -39,6 +39,15 @@ export default function DashboardLayout({ children }: LayoutProps) {
       }
 
       setUserEmail(user.email || '');
+
+      // Check if user just upgraded - if so, add a small delay to ensure webhook processed
+      const searchParams = new URLSearchParams(window.location.search);
+      const justUpgraded = searchParams.get('upgraded') === 'true';
+
+      if (justUpgraded) {
+        // Wait a bit for webhook to process
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
 
       const { data: subscription } = await supabase
         .from('subscriptions')
@@ -116,15 +125,14 @@ export default function DashboardLayout({ children }: LayoutProps) {
 
       <div className="relative z-10 flex h-screen">
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-800/50 backdrop-blur-sm border-r border-cyan-400/20 transform transition-transform duration-300 lg:translate-x-0 lg:static ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+          className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-800/50 backdrop-blur-sm border-r border-cyan-400/20 transform transition-transform duration-300 lg:translate-x-0 lg:static ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
         >
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between p-6 border-b border-slate-700">
               <Link href="/dashboard">
-                <div className="flex items-center space-x-2 cursor-pointer">
-                  <Shield className="w-8 h-8 text-cyan-400" />
+                <div className="flex items-center space-x-3 cursor-pointer group">
+                  <Logo className="w-8 h-8 transition-transform group-hover:scale-110" />
                   <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                     Dravikly
                   </span>
@@ -144,11 +152,10 @@ export default function DashboardLayout({ children }: LayoutProps) {
                 return (
                   <Link key={item.name} href={item.href}>
                     <div
-                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${
-                        isActive
-                          ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-400/50'
-                          : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
-                      }`}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${isActive
+                        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-400/50'
+                        : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                        }`}
                     >
                       <item.icon className="w-5 h-5" />
                       <span className="font-medium">{item.name}</span>
