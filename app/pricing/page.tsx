@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, ArrowRight, Zap, TrendingUp, Crown, Loader2 } from 'lucide-react';
+import { Check, ArrowRight, Zap, TrendingUp, Crown, Loader2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
