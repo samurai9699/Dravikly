@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Shield, Mail, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Mail, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createClient } from '@/lib/supabase/client';
+import { Logo } from '@/components/Logo';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -58,8 +59,8 @@ export default function ForgotPasswordPage() {
 
       <div className="relative z-10 w-full max-w-md">
         <Link href="/">
-          <div className="flex items-center justify-center space-x-2 mb-8 cursor-pointer">
-            <Shield className="w-10 h-10 text-cyan-400" />
+          <div className="flex items-center justify-center space-x-3 mb-8 cursor-pointer group">
+            <Logo className="w-10 h-10 transition-transform group-hover:scale-110" />
             <span className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
               Dravikly
             </span>
