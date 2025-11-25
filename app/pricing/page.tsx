@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Shield, ArrowRight, Zap, TrendingUp, Crown, Loader2 } from 'lucide-react';
+import { Check, ArrowRight, Zap, TrendingUp, Crown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/track-event';
 import { createClient } from '@/lib/supabase/client';
+import { Logo } from '@/components/Logo';
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
@@ -56,7 +57,10 @@ export default function PricingPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ tier: tier.toLowerCase() }),
+        body: JSON.stringify({
+          tier: tier.toLowerCase(),
+          billingCadence: isAnnual ? 'annual' : 'monthly',
+        }),
       });
 
       const data = await response.json();
@@ -191,8 +195,8 @@ export default function PricingPage() {
       <nav className="relative z-10 container mx-auto px-4 sm:px-6 py-6">
         <div className="flex justify-between items-center">
           <Link href="/">
-            <div className="flex items-center space-x-2 cursor-pointer">
-              <Shield className="w-6 sm:w-8 h-6 sm:h-8 text-cyan-400" />
+            <div className="flex items-center space-x-3 cursor-pointer group">
+              <Logo className="w-6 sm:w-8 h-6 sm:h-8 transition-transform group-hover:scale-110" />
               <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                 Dravikly
               </span>
@@ -251,9 +255,8 @@ export default function PricingPage() {
             {tiers.map((tier, index) => (
               <div
                 key={index}
-                className={`relative group ${
-                  tier.highlighted ? 'md:scale-105 z-10' : ''
-                }`}
+                className={`relative group ${tier.highlighted ? 'md:scale-105 z-10' : ''
+                  }`}
               >
                 {tier.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
@@ -263,11 +266,10 @@ export default function PricingPage() {
                   </div>
                 )}
                 <div
-                  className={`relative h-full bg-slate-800/50 backdrop-blur-sm border rounded-2xl p-8 transition-all duration-300 ${
-                    tier.highlighted
-                      ? 'border-cyan-400/50 shadow-lg shadow-cyan-400/20'
-                      : 'border-cyan-400/20 hover:border-cyan-400/40'
-                  } group-hover:shadow-2xl group-hover:shadow-cyan-400/20`}
+                  className={`relative h-full bg-slate-800/50 backdrop-blur-sm border rounded-2xl p-8 transition-all duration-300 ${tier.highlighted
+                    ? 'border-cyan-400/50 shadow-lg shadow-cyan-400/20'
+                    : 'border-cyan-400/20 hover:border-cyan-400/40'
+                    } group-hover:shadow-2xl group-hover:shadow-cyan-400/20`}
                 >
                   <div className="mb-6">
                     <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br ${tier.gradient} mb-4`}>
@@ -311,11 +313,10 @@ export default function PricingPage() {
                     <Button
                       onClick={() => handleCheckout(tier.name)}
                       disabled={checkoutLoading !== null}
-                      className={`w-full group/btn ${
-                        tier.highlighted
-                          ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white'
-                          : 'bg-slate-700 hover:bg-slate-600 text-white'
-                      }`}
+                      className={`w-full group/btn ${tier.highlighted
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white'
+                        : 'bg-slate-700 hover:bg-slate-600 text-white'
+                        }`}
                       size="lg"
                     >
                       {checkoutLoading === tier.name ? (
