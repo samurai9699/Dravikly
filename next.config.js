@@ -12,8 +12,6 @@ const nextConfig = {
     }
     return config;
   },
-  // Reduce build complexity
-  swcMinify: true,
   // Disable image optimization if causing issues
   images: {
     unoptimized: true,
