@@ -18,14 +18,70 @@ function isValidUrl(urlString: string): boolean {
 }
 
 function extractForms(html: string): string {
+  // Extract traditional HTML forms
   const formRegex = /<form[\s\S]*?<\/form>/gi;
-  const forms = html.match(formRegex);
+  const forms = html.match(formRegex) || [];
 
-  if (!forms || forms.length === 0) {
+  // Also detect common patterns for JavaScript-rendered forms
+  const jsFormIndicators = [
+    // React Hook Form, Formik, etc.
+    /data-form[^>]*>/gi,
+    /role=["']form["'][^>]*>/gi,
+    // Common form libraries
+    /class=["'][^"']*form[^"']*["'][^>]*>/gi,
+    // Input groups that might be forms
+    /<div[^>]*>\s*<input[^>]*type=["'](email|password|text)["'][^>]*>/gi,
+  ];
+
+  const jsFormMatches: string[] = [];
+  jsFormIndicators.forEach(pattern => {
+    const matches = html.match(pattern);
+    if (matches) {
+      jsFormMatches.push(...matches);
+    }
+  });
+
+  // Look for input fields outside traditional forms
+  const inputRegex = /<input[^>]*type=["'](email|password|text|tel|number)["'][^>]*>/gi;
+  const inputs = html.match(inputRegex) || [];
+
+  // Look for submit buttons
+  const buttonRegex = /<button[^>]*type=["']submit["'][^>]*>[\s\S]*?<\/button>/gi;
+  const submitButtons = html.match(buttonRegex) || [];
+
+  const hasInputs = inputs.length > 0;
+  const hasSubmitButtons = submitButtons.length > 0;
+  const hasJsFormIndicators = jsFormMatches.length > 0;
+
+  if (forms.length === 0 && !hasInputs && !hasJsFormIndicators) {
     return 'No forms found on the page.';
   }
 
-  return forms.join('\n\n');
+  // Build a comprehensive form context
+  const formContext: string[] = [];
+
+  if (forms.length > 0) {
+    formContext.push(`=== Traditional HTML Forms (${forms.length}) ===`);
+    formContext.push(forms.join('\n\n'));
+  }
+
+  if (hasInputs || hasSubmitButtons || hasJsFormIndicators) {
+    formContext.push(`\n=== Form Elements Detected ===`);
+    formContext.push(`Input fields: ${inputs.length}`);
+    formContext.push(`Submit buttons: ${submitButtons.length}`);
+    formContext.push(`JS form indicators: ${jsFormMatches.length}`);
+
+    // Include sample inputs for context
+    if (inputs.length > 0) {
+      formContext.push(`\nSample inputs:\n${inputs.slice(0, 10).join('\n')}`);
+    }
+
+    if (submitButtons.length > 0) {
+      formContext.push(`\nSubmit buttons:\n${submitButtons.slice(0, 5).join('\n')}`);
+    }
+  }
+
+  return formContext.join('\n');
 }
 
 async function fetchWebsiteHtml(url: string): Promise<string> {
@@ -241,9 +297,13 @@ async function processAnalysis(analysisId: string, url: string, supabase: any, u
 
     const forms = extractForms(html);
 
-    const relevantHtml = html.slice(0, 50000);
+    // Increased from 50KB to 100KB to capture more content
+    const relevantHtml = html.slice(0, 100000);
 
     const aiAnalysis = await analyzeWebsiteFriction(url, relevantHtml);
+
+    const formsDetected = forms !== 'No forms found on the page.';
+    const formCount = formsDetected ? (forms.match(/<form/gi) || []).length : 0;
 
     const insights = {
       summary: aiAnalysis.summary,
@@ -253,8 +313,8 @@ async function processAnalysis(analysisId: string, url: string, supabase: any, u
         description: issue.description,
         recommendation: issue.fix,
       })),
-      forms_detected: forms !== 'No forms found on the page.',
-      forms_count: forms === 'No forms found on the page.' ? 0 : (forms.match(/<form/gi) || []).length,
+      forms_detected: formsDetected,
+      forms_count: formCount,
     };
 
     const duration = Math.round((Date.now() - startTime) / 1000);
