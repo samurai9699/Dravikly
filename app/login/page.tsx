@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Logo } from '@/components/Logo';
@@ -13,6 +13,17 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const supabase = createClient();
+
+  // Check for auth errors from callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get('error');
+    if (authError === 'auth_failed') {
+      setError('Authentication failed. Please try again.');
+    } else if (authError === 'unexpected') {
+      setError('An unexpected error occurred. Please try again.');
+    }
+  }, []);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +53,8 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        router.push('/dashboard');
-        router.refresh();
+        // Use replace instead of push to avoid back button issues
+        router.replace('/dashboard');
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
@@ -61,15 +72,20 @@ export default function LoginPage() {
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
 
       if (signInError) {
         setError(signInError.message);
+        setLoading(false);
       }
+      // Don't set loading to false here - let the redirect happen
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -153,7 +169,7 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-3 px-4 bg-slate-900/50 border border-slate-700 hover:bg-slate-700 text-white rounded-lg transition-all disabled:opacity-50"
+            className="w-full py-3 px-4 bg-slate-900/50 border border-slate-700 hover:bg-slate-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="flex items-center justify-center">
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -162,7 +178,7 @@ export default function LoginPage() {
                 <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              Sign in with Google
+              {loading ? 'Connecting...' : 'Continue with Google'}
             </div>
           </button>
 
