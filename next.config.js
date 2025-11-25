@@ -7,6 +7,13 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Suppress punycode deprecation warning
+  webpack: (config) => {
+    config.ignoreWarnings = [
+      { module: /node_modules\/punycode/ },
+    ];
+    return config;
+  },
 };
 
 module.exports = nextConfig;
