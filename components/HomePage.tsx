@@ -1,7 +1,7 @@
 import React from 'react'
 import { useAuth } from '../src/hooks/useAuth'
 import { useSubscription } from '../src/hooks/useSubscription'
-import { Button } from './ui/Button'
+import { Button } from './ui/button'
 import { Crown, Star, Zap } from 'lucide-react'
 
 interface HomePageProps {
