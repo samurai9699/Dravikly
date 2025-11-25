@@ -54,72 +54,109 @@ Return ONLY valid JSON in this exact format:
   "summary": "brief overview of findings"
 }`;
 
+async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export async function analyzeWebsiteFriction(
   url: string,
   html: string
 ): Promise<FrictionAnalysis> {
-  try {
-    const apiKey = process.env.OPENROUTER_API_KEY;
+  const maxRetries = 3;
+  let lastError: Error | null = null;
 
-    if (!apiKey) {
-      throw new Error('OpenRouter API key not configured');
-    }
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const apiKey = process.env.OPENROUTER_API_KEY;
 
-    const response = await axios.post(
-      `${OPENROUTER_API_URL}/chat/completions`,
-      {
-        model: MODEL,
-        messages: [
-          {
-            role: 'system',
-            content: ANALYSIS_PROMPT,
-          },
-          {
-            role: 'user',
-            content: `URL: ${url}\n\nHTML Content:\n${html.slice(0, 50000)}`,
-          },
-        ],
-        response_format: { type: 'json_object' },
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-          'X-Title': 'Website Friction Analyzer',
-        },
+      if (!apiKey) {
+        throw new Error('OpenRouter API key not configured');
       }
-    );
 
-    const content = response.data.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error('No response from OpenRouter API');
-    }
-
-    const analysis: FrictionAnalysis = JSON.parse(content);
-
-    if (
-      typeof analysis.score !== 'number' ||
-      !Array.isArray(analysis.issues) ||
-      typeof analysis.summary !== 'string'
-    ) {
-      throw new Error('Invalid response format from AI');
-    }
-
-    return analysis;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status;
-      const message = error.response?.data?.error?.message || error.message;
-
-      throw new Error(
-        `OpenRouter API error (${status || 'unknown'}): ${message}`
+      const response = await axios.post(
+        `${OPENROUTER_API_URL}/chat/completions`,
+        {
+          model: MODEL,
+          messages: [
+            {
+              role: 'system',
+              content: ANALYSIS_PROMPT,
+            },
+            {
+              role: 'user',
+              content: `URL: ${url}\n\nHTML Content:\n${html.slice(0, 50000)}`,
+            },
+          ],
+          response_format: { type: 'json_object' },
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+            'X-Title': 'Website Friction Analyzer',
+          },
+          timeout: 45000, // 45 second timeout
+        }
       );
-    }
 
-    throw error;
+      const content = response.data.choices[0]?.message?.content;
+
+      if (!content) {
+        throw new Error('No response from OpenRouter API');
+      }
+
+      const analysis: FrictionAnalysis = JSON.parse(content);
+
+      if (
+        typeof analysis.score !== 'number' ||
+        !Array.isArray(analysis.issues) ||
+        typeof analysis.summary !== 'string'
+      ) {
+        throw new Error('Invalid response format from AI');
+      }
+
+      return analysis;
+    } catch (error) {
+      lastError = error as Error;
+
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        const message = error.response?.data?.error?.message || error.message;
+
+        // Don't retry on client errors (4xx) except rate limits
+        if (status && status >= 400 && status < 500 && status !== 429) {
+          throw new Error(
+            `OpenRouter API error (${status}): ${message}`
+          );
+        }
+
+        // Retry on server errors (5xx), timeouts, or rate limits
+        if (attempt < maxRetries) {
+          const backoffMs = Math.min(1000 * Math.pow(2, attempt - 1), 5000); // Exponential backoff: 1s, 2s, 4s (max 5s)
+          console.log(`AI request failed (attempt ${attempt}/${maxRetries}), retrying in ${backoffMs}ms...`);
+          await sleep(backoffMs);
+          continue;
+        }
+
+        throw new Error(
+          `OpenRouter API error after ${maxRetries} attempts (${status || 'unknown'}): ${message}`
+        );
+      }
+
+      // Retry on other errors
+      if (attempt < maxRetries) {
+        const backoffMs = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        console.log(`AI request failed (attempt ${attempt}/${maxRetries}), retrying in ${backoffMs}ms...`);
+        await sleep(backoffMs);
+        continue;
+      }
+
+      throw error;
+    }
   }
+
+  throw lastError || new Error('AI analysis failed after all retries');
 }
 
 export async function testOpenRouterConnection(): Promise<boolean> {
