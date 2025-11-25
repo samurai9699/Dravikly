@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { stripeProducts } from '../src/stripe-config'
-import { ProductCard } from './ProductCard'
+import { ProductCard } from '@/src/components/ProductCard'
 import { useAuth } from '../src/hooks/useAuth'
-import { Alert } from './ui/Alert'
+import { Alert } from '@/src/components/ui/Alert'
 
 interface PricingPageProps {
   onNavigate: (page: string) => void
