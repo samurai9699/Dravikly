@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import {
-  Shield,
   ArrowRight,
   CheckCircle2,
   AlertTriangle,
@@ -18,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Logo } from '@/components/Logo';
 
 export default function GuidePage() {
   return (
@@ -40,8 +40,8 @@ export default function GuidePage() {
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <Link href="/">
-                <div className="flex items-center space-x-2 cursor-pointer">
-                  <Shield className="w-8 h-8 text-cyan-400" />
+                <div className="flex items-center space-x-3 cursor-pointer group">
+                  <Logo className="w-8 h-8 transition-transform group-hover:scale-110" />
                   <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                     Dravikly
                   </span>
@@ -792,8 +792,8 @@ export default function GuidePage() {
         <footer className="border-t border-cyan-400/20 bg-slate-800/50 backdrop-blur-sm mt-16">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-              <div className="flex items-center space-x-2">
-                <Shield className="w-6 h-6 text-cyan-400" />
+              <div className="flex items-center space-x-3">
+                <Logo className="w-6 h-6" />
                 <span className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                   Dravikly
                 </span>
