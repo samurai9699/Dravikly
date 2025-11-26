@@ -107,10 +107,16 @@ export default function PricingPage() {
         // Open overlay (production only - domain approved)
         window.Paddle.Checkout.open({
           transactionId: data.transactionId,
+          settings: {
+            successUrl: `${window.location.origin}/success?tier=${tier}`,
+          },
         });
       } else {
         // Redirect to Paddle checkout page (localhost or fallback)
-        window.location.href = data.url;
+        // Append success URL as query parameter
+        const checkoutUrl = new URL(data.url);
+        checkoutUrl.searchParams.set('_ptxn', data.transactionId);
+        window.location.href = checkoutUrl.toString();
       }
 
       setCheckoutLoading(null);
