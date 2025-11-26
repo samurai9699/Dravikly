@@ -86,6 +86,8 @@ export default function PricingPage() {
       }
 
       // Open Paddle checkout overlay
+      console.log('Opening checkout with priceId:', priceId);
+
       window.Paddle.Checkout.open({
         items: [
           {
@@ -97,12 +99,6 @@ export default function PricingPage() {
           user_id: user.id,
           tier: tier.toUpperCase(),
           billing_cycle: isAnnual ? 'annual' : 'monthly',
-        },
-        settings: {
-          displayMode: 'overlay',
-          theme: 'dark',
-          locale: 'en',
-          successUrl: `${window.location.origin}/dashboard?upgraded=true`,
         },
       });
 
