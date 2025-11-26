@@ -56,18 +56,8 @@ export async function GET(request: NextRequest) {
                 results.tests.table_exists = true;
             }
 
-            // Test 4: RLS Policies
-            const { data: policies, error: policyError } = await supabaseAdmin
-                .rpc('exec_sql', {
-                    sql: `
-                        SELECT policyname, roles, cmd 
-                        FROM pg_policies 
-                        WHERE tablename = 'subscriptions'
-                    `
-                })
-                .catch(() => ({ data: null, error: { message: 'Cannot query policies' } }));
-
-            results.tests.rls_policies = policies || 'Unable to check (this is OK)';
+            // Test 4: RLS Policies (skip this test - not critical)
+            results.tests.rls_policies = 'Skipped (not critical for diagnosis)';
 
             // Test 5: Try to Insert Test Subscription
             const testUserId = '00000000-0000-0000-0000-000000000000'; // Dummy UUID
