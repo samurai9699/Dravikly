@@ -87,14 +87,16 @@ export default function PricingPage() {
 
       // Open Paddle checkout overlay
       window.Paddle.Checkout.open({
-        items: [{ priceId, quantity: 1 }],
+        items: [
+          {
+            priceId: priceId,
+            quantity: 1,
+          },
+        ],
         customData: {
-          userId: user.id,
+          user_id: user.id,
           tier: tier.toUpperCase(),
-          billingCycle: isAnnual ? 'annual' : 'monthly',
-        },
-        customer: {
-          email: user.email,
+          billing_cycle: isAnnual ? 'annual' : 'monthly',
         },
         settings: {
           displayMode: 'overlay',
