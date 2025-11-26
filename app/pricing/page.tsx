@@ -16,11 +16,12 @@ import { toast } from 'sonner';
 import { trackEvent } from '@/lib/track-event';
 import { createClient } from '@/lib/supabase/client';
 import { Logo } from '@/components/Logo';
+import { PRICING_TIERS, TierName } from '@/lib/paddle-config';
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
-  const [currentTier, setCurrentTier] = useState('FREE');
+  const [currentTier, setCurrentTier] = useState<TierName>('free');
   const router = useRouter();
   const supabase = createClient();
 
@@ -36,14 +37,14 @@ export default function PricingPage() {
         .maybeSingle();
 
       if (subscription) {
-        setCurrentTier(subscription.tier);
+        setCurrentTier((subscription.tier?.toLowerCase() || 'free') as TierName);
       }
     };
 
     loadUserTier();
   }, [supabase]);
 
-  const handleCheckout = async (tier: string) => {
+  const handleCheckout = async (tier: TierName) => {
     setCheckoutLoading(tier);
 
     try {
@@ -52,14 +53,14 @@ export default function PricingPage() {
         to_tier: tier.toUpperCase(),
       });
 
-      const response = await fetch('/api/create-checkout', {
+      const response = await fetch('/api/paddle/create-checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tier: tier.toLowerCase(),
-          billingCadence: isAnnual ? 'annual' : 'monthly',
+          tier: tier,
+          billingCycle: isAnnual ? 'annual' : 'monthly',
         }),
       });
 
@@ -84,61 +85,44 @@ export default function PricingPage() {
 
   const tiers = [
     {
-      name: 'Free',
+      ...PRICING_TIERS.free,
       icon: Shield,
       price: 0,
       period: 'forever',
-      description: 'Perfect for getting started',
-      features: [
-        '3 analyses per day',
-        'Basic friction report',
-        'Limited history (last 5)',
-        'Community support',
-      ],
       cta: 'Start Free',
       ctaLink: '/signup',
-      highlighted: false,
       gradient: 'from-slate-500 to-slate-600',
+      savings: null,
     },
     {
-      name: 'Pro',
+      ...PRICING_TIERS.starter,
       icon: Zap,
-      price: isAnnual ? 23 : 29,
+      price: isAnnual ? PRICING_TIERS.starter.annualPrice : PRICING_TIERS.starter.monthlyPrice,
       period: 'month',
-      description: 'For serious conversion optimization',
-      features: [
-        '20 analyses per day',
-        'Deep insights & recommendations',
-        'Full history access',
-        'PDF export',
-        'Email support',
-      ],
+      cta: 'Get Started',
+      ctaLink: '/checkout/starter',
+      gradient: 'from-blue-500 to-cyan-500',
+      savings: isAnnual ? `Save $${(PRICING_TIERS.starter.monthlyPrice - PRICING_TIERS.starter.annualPrice) * 12}/year` : null,
+    },
+    {
+      ...PRICING_TIERS.pro,
+      icon: Zap,
+      price: isAnnual ? PRICING_TIERS.pro.annualPrice : PRICING_TIERS.pro.monthlyPrice,
+      period: 'month',
       cta: 'Upgrade to Pro',
       ctaLink: '/checkout/pro',
-      highlighted: true,
-      popular: true,
       gradient: 'from-cyan-500 to-blue-500',
-      savings: isAnnual ? 'Save $72/year' : null,
+      savings: isAnnual ? `Save $${(PRICING_TIERS.pro.monthlyPrice - PRICING_TIERS.pro.annualPrice) * 12}/year` : null,
     },
     {
-      name: 'Ultra',
+      ...PRICING_TIERS.enterprise,
       icon: Crown,
-      price: isAnnual ? 79 : 99,
+      price: isAnnual ? PRICING_TIERS.enterprise.annualPrice : PRICING_TIERS.enterprise.monthlyPrice,
       period: 'month',
-      description: 'Maximum power for agencies',
-      features: [
-        'Unlimited analyses',
-        'Priority processing',
-        'Competitive benchmarking',
-        'API access',
-        'Priority support',
-        'White-label reports',
-      ],
-      cta: 'Go Ultra',
-      ctaLink: '/checkout/ultra',
-      highlighted: false,
+      cta: 'Go Enterprise',
+      ctaLink: '/checkout/enterprise',
       gradient: 'from-purple-500 to-pink-500',
-      savings: isAnnual ? 'Save $240/year' : null,
+      savings: isAnnual ? `Save $${(PRICING_TIERS.enterprise.monthlyPrice - PRICING_TIERS.enterprise.annualPrice) * 12}/year` : null,
     },
   ];
 
@@ -251,7 +235,7 @@ export default function PricingPage() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-20">
             {tiers.map((tier, index) => (
               <div
                 key={index}
@@ -299,7 +283,7 @@ export default function PricingPage() {
                     ))}
                   </ul>
 
-                  {tier.name === 'Free' ? (
+                  {tier.id === 'free' ? (
                     <Link href={tier.ctaLink} className="block">
                       <Button
                         className="w-full group/btn bg-slate-700 hover:bg-slate-600 text-white"
@@ -311,7 +295,7 @@ export default function PricingPage() {
                     </Link>
                   ) : (
                     <Button
-                      onClick={() => handleCheckout(tier.name)}
+                      onClick={() => handleCheckout(tier.id)}
                       disabled={checkoutLoading !== null}
                       className={`w-full group/btn ${tier.highlighted
                         ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white'
@@ -319,7 +303,7 @@ export default function PricingPage() {
                         }`}
                       size="lg"
                     >
-                      {checkoutLoading === tier.name ? (
+                      {checkoutLoading === tier.id ? (
                         <>
                           <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                           Processing...
