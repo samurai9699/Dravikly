@@ -84,7 +84,7 @@ export default function PricingPage() {
         await loadPaddleScript();
       }
 
-      // Open Paddle checkout with transactionId from server
+      // Create checkout session on server
       const response = await fetch('/api/paddle/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -100,13 +100,16 @@ export default function PricingPage() {
         throw new Error(data.error || 'Failed to create checkout');
       }
 
-      // Open overlay with transaction ID
-      if (data.transactionId) {
+      // Use overlay on production, redirect on localhost
+      const isProduction = window.location.hostname !== 'localhost';
+
+      if (isProduction && data.transactionId) {
+        // Open overlay (production only - domain approved)
         window.Paddle.Checkout.open({
           transactionId: data.transactionId,
         });
       } else {
-        // Fallback to URL if no transaction ID
+        // Redirect to Paddle checkout page (localhost or fallback)
         window.location.href = data.url;
       }
 
