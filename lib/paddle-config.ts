@@ -199,3 +199,18 @@ export function getTierByPriceId(priceId: string): TierName | null {
 export function getMonthlyAnalysesLimit(tier: TierName): number {
     return getTierLimits(tier).analyses_per_month;
 }
+
+// Get price details for email templates
+export function getPriceDetails(tier: string): { monthly: string; annual: string } {
+    const tierName = tier.toLowerCase() as TierName;
+    const config = PRICING_TIERS[tierName];
+
+    if (!config) {
+        return { monthly: '$0', annual: '$0' };
+    }
+
+    return {
+        monthly: `$${config.monthlyPrice}`,
+        annual: `$${config.annualPrice * 12}`,
+    };
+}
