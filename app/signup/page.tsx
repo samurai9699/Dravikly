@@ -73,6 +73,11 @@ export default function SignupPage() {
           }
         }
 
+        // Send welcome email (don't wait for it)
+        fetch('/api/auth/welcome', {
+          method: 'POST',
+        }).catch(err => console.error('Failed to send welcome email:', err));
+
         // Use replace instead of push to avoid back button issues
         router.replace('/dashboard');
       }
