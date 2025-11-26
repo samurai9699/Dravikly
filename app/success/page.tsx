@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-export default function SuccessPage() {
+function SuccessPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -153,5 +153,22 @@ export default function SuccessPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function SuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center p-4">
+                <div className="max-w-md w-full bg-slate-800/50 backdrop-blur-sm border border-cyan-400/20 rounded-2xl p-8 text-center">
+                    <div className="flex justify-center mb-6">
+                        <Loader2 className="w-16 h-16 text-cyan-400 animate-spin" />
+                    </div>
+                    <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+                </div>
+            </div>
+        }>
+            <SuccessPageContent />
+        </Suspense>
     );
 }
