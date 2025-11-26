@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:email": "node test-email-system.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -39,7 +40,7 @@
     "@radix-ui/react-toggle": "^1.1.0",
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
-    "@react-email/components": "^0.5.7",
+    "@react-email/components": "^1.0.1",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.84.0",
     "@types/node": "^22.0.0",
