@@ -18,6 +18,13 @@ import { createClient } from '@/lib/supabase/client';
 import { Logo } from '@/components/Logo';
 import { PRICING_TIERS, TierName } from '@/lib/paddle-config';
 
+// Declare Paddle global type
+declare global {
+  interface Window {
+    Paddle?: any;
+  }
+}
+
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
@@ -48,39 +55,96 @@ export default function PricingPage() {
     setCheckoutLoading(tier);
 
     try {
+      // Check if user is logged in first
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast.error('Please log in to upgrade your plan');
+        router.push('/login');
+        setCheckoutLoading(null);
+        return;
+      }
+
       await trackEvent('upgrade_clicked', {
         from_tier: currentTier,
         to_tier: tier.toUpperCase(),
       });
 
-      const response = await fetch('/api/paddle/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tier: tier,
-          billingCycle: isAnnual ? 'annual' : 'monthly',
-        }),
-      });
+      // Get the price ID for this tier
+      const priceId = isAnnual
+        ? PRICING_TIERS[tier].paddleAnnualPriceId
+        : PRICING_TIERS[tier].paddleMonthlyPriceId;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast.error('Please log in to upgrade your plan');
-          router.push('/login');
-          return;
-        }
-        throw new Error(data.error || 'Failed to create checkout session');
+      if (!priceId) {
+        throw new Error('Price ID not configured for this plan');
       }
 
-      window.location.href = data.url;
+      // Initialize Paddle
+      if (!window.Paddle) {
+        // Load Paddle.js if not already loaded
+        await loadPaddleScript();
+      }
+
+      // Open Paddle checkout overlay
+      window.Paddle.Checkout.open({
+        items: [{ priceId, quantity: 1 }],
+        customData: {
+          userId: user.id,
+          tier: tier.toUpperCase(),
+          billingCycle: isAnnual ? 'annual' : 'monthly',
+        },
+        customer: {
+          email: user.email,
+        },
+        settings: {
+          displayMode: 'overlay',
+          theme: 'dark',
+          locale: 'en',
+          successUrl: `${window.location.origin}/dashboard?upgraded=true`,
+        },
+      });
+
+      setCheckoutLoading(null);
     } catch (error) {
       console.error('Checkout error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to start checkout');
       setCheckoutLoading(null);
     }
+  };
+
+  // Load Paddle.js script
+  const loadPaddleScript = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (window.Paddle) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js';
+      script.async = true;
+
+      script.onload = () => {
+        if (window.Paddle) {
+          const environment = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production'
+            ? 'production'
+            : 'sandbox';
+
+          window.Paddle.Environment.set(environment);
+          window.Paddle.Initialize({
+            token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || '',
+          });
+
+          resolve();
+        } else {
+          reject(new Error('Paddle failed to load'));
+        }
+      };
+
+      script.onerror = () => reject(new Error('Failed to load Paddle script'));
+
+      document.head.appendChild(script);
+    });
   };
 
   const tiers = [
