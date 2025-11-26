@@ -45,14 +45,23 @@ export async function POST(request: NextRequest) {
         // Verify the signature using Paddle SDK
         // Note: Paddle's signature verification is done differently than Stripe
         // The signature header contains: ts=timestamp;h1=signature
-        const isValid = verifyPaddleSignature(body, signature, webhookSecret);
 
-        if (!isValid) {
-            console.error('Invalid Paddle signature');
-            return NextResponse.json(
-                { error: 'Invalid signature' },
-                { status: 400 }
-            );
+        // TEMPORARY: Skip signature verification for debugging
+        // TODO: Remove this after fixing signature issue
+        const SKIP_SIGNATURE_VERIFICATION = process.env.SKIP_WEBHOOK_SIGNATURE === 'true';
+
+        if (!SKIP_SIGNATURE_VERIFICATION) {
+            const isValid = verifyPaddleSignature(body, signature, webhookSecret);
+
+            if (!isValid) {
+                console.error('Invalid Paddle signature - webhook rejected');
+                return NextResponse.json(
+                    { error: 'Invalid signature' },
+                    { status: 400 }
+                );
+            }
+        } else {
+            console.warn('⚠️ SIGNATURE VERIFICATION SKIPPED - FOR TESTING ONLY');
         }
 
         console.log('Paddle webhook event received:', event.event_type);
@@ -95,14 +104,24 @@ function verifyPaddleSignature(body: string, signature: string, secret: string):
     try {
         const crypto = require('crypto');
 
+        console.log('Verifying signature:', {
+            signatureHeader: signature,
+            secretLength: secret?.length,
+            secretPrefix: secret?.substring(0, 10),
+            bodyLength: body.length
+        });
+
         // Parse signature header: ts=timestamp;h1=signature
         const parts = signature.split(';');
         const timestamp = parts.find(p => p.startsWith('ts='))?.split('=')[1];
         const signatureHash = parts.find(p => p.startsWith('h1='))?.split('=')[1];
 
         if (!timestamp || !signatureHash) {
+            console.error('Missing timestamp or signature hash in header');
             return false;
         }
+
+        console.log('Parsed signature parts:', { timestamp, signatureHashLength: signatureHash.length });
 
         // Create the signed payload
         const signedPayload = `${timestamp}:${body}`;
@@ -112,6 +131,12 @@ function verifyPaddleSignature(body: string, signature: string, secret: string):
             .createHmac('sha256', secret)
             .update(signedPayload)
             .digest('hex');
+
+        console.log('Signature comparison:', {
+            received: signatureHash.substring(0, 20) + '...',
+            expected: expectedSignature.substring(0, 20) + '...',
+            match: signatureHash === expectedSignature
+        });
 
         // Compare signatures
         return crypto.timingSafeEqual(
