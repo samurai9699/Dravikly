@@ -5,6 +5,8 @@ import axios from 'axios';
 import { analyzeWebsiteFriction } from '@/lib/openrouter';
 import { trackEventServer } from '@/lib/track-event-server';
 import { checkMonthlyUsageLimit, canExportPDF } from '@/lib/subscription-check-paddle';
+import { EmailService } from '@/lib/email/service';
+import { checkAndSendUsageWarning } from '@/lib/email/usage-monitor';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -306,6 +308,16 @@ async function processAnalysis(analysisId: string, url: string, supabase: any, u
     // No need to manually increment counters with monthly limits
 
     await trackEventServer('analysis_completed', { url, duration }, userId);
+
+    // Send completion email (don't wait for it)
+    sendAnalysisCompleteEmail(userId, url, aiAnalysis.score, analysisId).catch(err =>
+      console.error('Failed to send analysis complete email:', err)
+    );
+
+    // Check if user should receive usage warning
+    checkAndSendUsageWarning(userId).catch(err =>
+      console.error('Failed to check usage warning:', err)
+    );
   } catch (error) {
     console.error('Processing error:', error);
 
@@ -326,5 +338,37 @@ async function processAnalysis(analysisId: string, url: string, supabase: any, u
         completed_at: new Date().toISOString(),
       })
       .eq('id', analysisId);
+  }
+}
+
+async function sendAnalysisCompleteEmail(userId: string, url: string, frictionScore: number, analysisId: string) {
+  try {
+    const supabaseAdmin = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          get() { return undefined; },
+          set() { },
+          remove() { },
+        },
+      }
+    );
+
+    const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
+
+    if (user?.user?.email) {
+      const userName = user.user.user_metadata?.name || user.user.email.split('@')[0];
+
+      await EmailService.sendAnalysisCompleteEmail({
+        to: user.user.email,
+        userName,
+        url,
+        frictionScore,
+        analysisId,
+      });
+    }
+  } catch (error) {
+    console.error('Error sending analysis complete email:', error);
   }
 }
