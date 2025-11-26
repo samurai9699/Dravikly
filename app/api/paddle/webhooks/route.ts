@@ -139,14 +139,39 @@ async function handleTransactionCompleted(data: any) {
 
         const userId = data.custom_data?.userId;
         const tier = data.custom_data?.tier;
-
-        if (!userId || !tier) {
-            console.error('Missing custom data in transaction:', data.id);
-            return;
-        }
-
         const customerId = data.customer_id;
         const subscriptionId = data.subscription_id;
+
+        console.log('Transaction completed:', {
+            transactionId: data.id,
+            userId,
+            tier,
+            customerId,
+            subscriptionId,
+            status: data.status
+        });
+
+        if (!userId || !tier) {
+            console.error('Missing custom data in transaction:', data.id, 'Data:', data);
+            // Try to find user by customer_id as fallback
+            if (customerId) {
+                const { data: existingSub } = await supabaseAdmin
+                    .from('subscriptions')
+                    .select('user_id')
+                    .eq('paddle_customer_id', customerId)
+                    .maybeSingle();
+
+                if (existingSub) {
+                    console.log('Found existing subscription for customer:', customerId);
+                    // Continue with the existing user
+                } else {
+                    console.error('Cannot process transaction without userId');
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
 
         // For one-time payments, subscription_id might be null
         if (subscriptionId) {
@@ -174,12 +199,14 @@ async function handleTransactionCompleted(data: any) {
                 throw error;
             }
 
-            console.log('Subscription created successfully for user:', userId);
+            console.log('Subscription created successfully for user:', userId, 'tier:', tier);
 
             // Send subscription confirmation email
             sendSubscriptionConfirmationEmail(userId, tier, subscriptionId).catch(err =>
                 console.error('Failed to send subscription confirmation email:', err)
             );
+        } else {
+            console.warn('No subscription_id in transaction - this might be a one-time payment');
         }
     } catch (error) {
         console.error('Error handling transaction completed:', error);
@@ -203,44 +230,88 @@ async function handleSubscriptionCreated(data: any) {
         // Get tier from price ID
         const priceId = data.items?.[0]?.price?.id;
         const tier = getTierByPriceId(priceId);
-
-        if (!tier) {
-            console.error('Could not determine tier from price ID:', priceId);
-            return;
-        }
-
         const customerId = data.customer_id;
         const subscriptionId = data.id;
 
-        // Try to find user by customer ID first
-        const { data: existingSubscription } = await supabaseAdmin
-            .from('subscriptions')
-            .select('user_id')
-            .eq('paddle_customer_id', customerId)
-            .maybeSingle();
+        console.log('Subscription created event:', {
+            subscriptionId,
+            customerId,
+            priceId,
+            tier,
+            status: data.status,
+            customData: data.custom_data
+        });
 
-        if (existingSubscription) {
-            // Update existing subscription
+        if (!tier) {
+            console.error('Could not determine tier from price ID:', priceId, 'Available items:', data.items);
+            return;
+        }
+
+        // Get userId from custom_data if available
+        const userId = data.custom_data?.userId;
+
+        if (userId) {
+            // We have userId from custom_data - create or update subscription
             const { error } = await supabaseAdmin
                 .from('subscriptions')
-                .update({
-                    tier: tier,
+                .upsert({
+                    user_id: userId,
+                    tier: tier.toLowerCase(),
                     status: data.status === 'trialing' ? 'trialing' : 'active',
+                    paddle_customer_id: customerId,
                     paddle_subscription_id: subscriptionId,
                     current_period_start: data.current_billing_period?.starts_at || new Date().toISOString(),
                     current_period_end: data.current_billing_period?.ends_at || null,
                     cancel_at_period_end: data.scheduled_change?.action === 'cancel',
                     updated_at: new Date().toISOString(),
-                })
-                .eq('paddle_customer_id', customerId);
+                }, {
+                    onConflict: 'user_id'
+                });
 
             if (error) {
-                console.error('Error updating subscription:', error);
+                console.error('Error creating subscription with userId:', error);
                 throw error;
             }
-        }
 
-        console.log('Subscription created for customer:', customerId);
+            console.log('Subscription created successfully for user:', userId, 'tier:', tier);
+
+            // Send confirmation email
+            sendSubscriptionConfirmationEmail(userId, tier, subscriptionId).catch(err =>
+                console.error('Failed to send subscription confirmation email:', err)
+            );
+        } else {
+            // Try to find user by customer ID
+            const { data: existingSubscription } = await supabaseAdmin
+                .from('subscriptions')
+                .select('user_id')
+                .eq('paddle_customer_id', customerId)
+                .maybeSingle();
+
+            if (existingSubscription) {
+                // Update existing subscription
+                const { error } = await supabaseAdmin
+                    .from('subscriptions')
+                    .update({
+                        tier: tier.toLowerCase(),
+                        status: data.status === 'trialing' ? 'trialing' : 'active',
+                        paddle_subscription_id: subscriptionId,
+                        current_period_start: data.current_billing_period?.starts_at || new Date().toISOString(),
+                        current_period_end: data.current_billing_period?.ends_at || null,
+                        cancel_at_period_end: data.scheduled_change?.action === 'cancel',
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('paddle_customer_id', customerId);
+
+                if (error) {
+                    console.error('Error updating subscription:', error);
+                    throw error;
+                }
+
+                console.log('Subscription updated for existing customer:', customerId);
+            } else {
+                console.error('Cannot create subscription - no userId in custom_data and no existing subscription found for customer:', customerId);
+            }
+        }
     } catch (error) {
         console.error('Error handling subscription created:', error);
         throw error;
