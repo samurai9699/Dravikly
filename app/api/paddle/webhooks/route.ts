@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { paddle } from '@/lib/paddle/server';
-import { getTierByPriceId } from '@/lib/paddle-config';
+import { getTierByPriceId, getPriceDetails } from '@/lib/paddle-config';
+import { EmailService } from '@/lib/email/service';
 
 export const dynamic = 'force-dynamic';
 
@@ -174,6 +175,11 @@ async function handleTransactionCompleted(data: any) {
             }
 
             console.log('Subscription created successfully for user:', userId);
+
+            // Send subscription confirmation email
+            sendSubscriptionConfirmationEmail(userId, tier, subscriptionId).catch(err =>
+                console.error('Failed to send subscription confirmation email:', err)
+            );
         }
     } catch (error) {
         console.error('Error handling transaction completed:', error);
@@ -340,8 +346,112 @@ async function handleSubscriptionCanceled(data: any) {
         }
 
         console.log('Subscription canceled, user downgraded to FREE:', customerId);
+
+        // Send cancellation email
+        sendSubscriptionCanceledEmail(customerId, data).catch(err =>
+            console.error('Failed to send subscription canceled email:', err)
+        );
     } catch (error) {
         console.error('Error handling subscription canceled:', error);
         throw error;
+    }
+}
+
+async function sendSubscriptionConfirmationEmail(userId: string, tier: string, subscriptionId: string) {
+    try {
+        const supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false,
+                },
+            }
+        );
+
+        const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
+        const { data: subscription } = await supabaseAdmin
+            .from('subscriptions')
+            .select('*')
+            .eq('user_id', userId)
+            .single();
+
+        if (user?.user?.email && subscription) {
+            const userName = user.user.user_metadata?.name || user.user.email.split('@')[0];
+            const priceDetails = getPriceDetails(tier.toUpperCase());
+
+            // Determine billing cycle from subscription
+            const billingCycle = subscription.current_period_end
+                ? (new Date(subscription.current_period_end).getTime() - new Date(subscription.current_period_start).getTime()) > (32 * 24 * 60 * 60 * 1000)
+                    ? 'annual' as const
+                    : 'monthly' as const
+                : 'monthly' as const;
+
+            const amount = billingCycle === 'annual' ? priceDetails.annual : priceDetails.monthly;
+            const nextBillingDate = subscription.current_period_end
+                ? new Date(subscription.current_period_end).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })
+                : undefined;
+
+            await EmailService.sendSubscriptionConfirmedEmail({
+                to: user.user.email,
+                userName,
+                tier: tier.toUpperCase(),
+                billingCycle,
+                amount,
+                nextBillingDate,
+            });
+        }
+    } catch (error) {
+        console.error('Error sending subscription confirmation email:', error);
+    }
+}
+
+async function sendSubscriptionCanceledEmail(customerId: string, data: any) {
+    try {
+        const supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false,
+                },
+            }
+        );
+
+        const { data: subscription } = await supabaseAdmin
+            .from('subscriptions')
+            .select('user_id, tier')
+            .eq('paddle_customer_id', customerId)
+            .single();
+
+        if (subscription) {
+            const { data: user } = await supabaseAdmin.auth.admin.getUserById(subscription.user_id);
+
+            if (user?.user?.email) {
+                const userName = user.user.user_metadata?.name || user.user.email.split('@')[0];
+                const endDate = data.current_billing_period?.ends_at
+                    ? new Date(data.current_billing_period.ends_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })
+                    : undefined;
+
+                await EmailService.sendSubscriptionCanceledEmail({
+                    to: user.user.email,
+                    userName,
+                    tier: subscription.tier.toUpperCase(),
+                    endDate,
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error sending subscription canceled email:', error);
     }
 }
