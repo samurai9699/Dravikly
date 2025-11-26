@@ -66,6 +66,8 @@ export async function POST(request: NextRequest) {
         const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
         // Create Paddle checkout transaction
+        console.log('Creating Paddle checkout for user:', user.id, 'tier:', normalizedTier, 'priceId:', priceId);
+
         const transaction = await paddle.transactions.create({
             items: [
                 {
@@ -80,6 +82,8 @@ export async function POST(request: NextRequest) {
                 email: user.email || '',
             },
         });
+
+        console.log('Paddle transaction created:', transaction.id, 'checkout URL:', transaction.checkout?.url);
 
         // Get checkout URL from transaction
         const checkoutUrl = transaction.checkout?.url || null;
