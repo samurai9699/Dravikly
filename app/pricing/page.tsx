@@ -81,26 +81,34 @@ export default function PricingPage() {
 
       // Initialize Paddle
       if (!window.Paddle) {
-        // Load Paddle.js if not already loaded
         await loadPaddleScript();
       }
 
-      // Open Paddle checkout overlay
-      console.log('Opening checkout with priceId:', priceId);
-
-      window.Paddle.Checkout.open({
-        items: [
-          {
-            priceId: priceId,
-            quantity: 1,
-          },
-        ],
-        customData: {
-          user_id: user.id,
-          tier: tier.toUpperCase(),
-          billing_cycle: isAnnual ? 'annual' : 'monthly',
-        },
+      // Open Paddle checkout with transactionId from server
+      const response = await fetch('/api/paddle/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tier: tier,
+          billingCycle: isAnnual ? 'annual' : 'monthly',
+        }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout');
+      }
+
+      // Open overlay with transaction ID
+      if (data.transactionId) {
+        window.Paddle.Checkout.open({
+          transactionId: data.transactionId,
+        });
+      } else {
+        // Fallback to URL if no transaction ID
+        window.location.href = data.url;
+      }
 
       setCheckoutLoading(null);
     } catch (error) {
