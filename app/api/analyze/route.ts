@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import axios from 'axios';
 import { analyzeWebsiteFriction } from '@/lib/openrouter';
 import { trackEventServer } from '@/lib/track-event-server';
+import { checkMonthlyUsageLimit, canExportPDF } from '@/lib/subscription-check-paddle';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -184,45 +185,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data: subscription, error: subError } = await supabase
-      .from('subscriptions')
-      .select('tier, analyses_used_today, last_reset_date')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    // Check monthly usage limit with new Paddle system
+    const usageCheck = await checkMonthlyUsageLimit(user.id);
 
-    if (subError || !subscription) {
+    if (!usageCheck.allowed) {
       return NextResponse.json(
-        { error: 'Subscription not found. Please contact support.' },
-        { status: 404 }
-      );
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    const lastReset = subscription.last_reset_date;
-    let analysesUsed = subscription.analyses_used_today;
-
-    if (lastReset !== today) {
-      analysesUsed = 0;
-      await supabase
-        .from('subscriptions')
-        .update({
-          analyses_used_today: 0,
-          last_reset_date: today,
-        })
-        .eq('user_id', user.id);
-    }
-
-    const limits: Record<string, number> = {
-      FREE: 3,
-      PRO: 20,
-      ULTRA: Infinity,
-    };
-
-    const limit = limits[subscription.tier] || 3;
-
-    if (analysesUsed >= limit) {
-      return NextResponse.json(
-        { error: 'Daily limit reached. Please upgrade your plan to continue.' },
+        {
+          error: 'Monthly limit reached. Please upgrade your plan to continue.',
+          limit: usageCheck.limit,
+          remaining: usageCheck.remaining,
+          tier: usageCheck.tier,
+        },
         { status: 429 }
       );
     }
@@ -256,7 +229,7 @@ export async function POST(request: Request) {
       .eq('id', analysisId);
 
     if (analysisId) {
-      processAnalysis(analysisId, url, supabase, user.id, analysesUsed).catch((error) => {
+      processAnalysis(analysisId, url, supabase, user.id).catch((error) => {
         console.error('Background analysis error:', error);
       });
     }
@@ -290,7 +263,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function processAnalysis(analysisId: string, url: string, supabase: any, userId: string, analysesUsed: number) {
+async function processAnalysis(analysisId: string, url: string, supabase: any, userId: string) {
   const startTime = Date.now();
   try {
     const html = await fetchWebsiteHtml(url);
@@ -329,13 +302,8 @@ async function processAnalysis(analysisId: string, url: string, supabase: any, u
       })
       .eq('id', analysisId);
 
-    // Only increment counter on successful completion
-    await supabase
-      .from('subscriptions')
-      .update({
-        analyses_used_today: analysesUsed + 1,
-      })
-      .eq('user_id', userId);
+    // Usage is tracked automatically by the analyses table
+    // No need to manually increment counters with monthly limits
 
     await trackEventServer('analysis_completed', { url, duration }, userId);
   } catch (error) {
