@@ -30,33 +30,45 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          tier: string
-          status: string
+          tier: 'free' | 'starter' | 'pro' | 'enterprise'
+          status: 'active' | 'cancelled' | 'canceled' | 'past_due' | 'trialing' | 'paused'
+          paddle_customer_id: string | null
+          paddle_subscription_id: string | null
+          current_period_start: string | null
           current_period_end: string | null
+          cancel_at_period_end: boolean
+          analyses_used_today: number
+          last_reset_date: string
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           user_id: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          tier?: string
-          status?: string
+          tier?: 'free' | 'starter' | 'pro' | 'enterprise'
+          status?: 'active' | 'cancelled' | 'canceled' | 'past_due' | 'trialing' | 'paused'
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          current_period_start?: string | null
           current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          analyses_used_today?: number
+          last_reset_date?: string
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           user_id?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          tier?: string
-          status?: string
+          tier?: 'free' | 'starter' | 'pro' | 'enterprise'
+          status?: 'active' | 'cancelled' | 'canceled' | 'past_due' | 'trialing' | 'paused'
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          current_period_start?: string | null
           current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          analyses_used_today?: number
+          last_reset_date?: string
           created_at?: string
           updated_at?: string
         }
