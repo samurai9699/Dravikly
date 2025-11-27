@@ -40,7 +40,7 @@ export const WelcomeEmail = ({ userName, userEmail }: WelcomeEmailProps) => {
 
                     <Section style={benefitsSection}>
                         <Text style={benefitsTitle}>What you can do with your FREE account:</Text>
-                        <Text style={benefitItem}>✓ 3 analyses per day</Text>
+                        <Text style={benefitItem}>✓ 5 analyses total</Text>
                         <Text style={benefitItem}>✓ AI-powered friction detection</Text>
                         <Text style={benefitItem}>✓ Actionable recommendations</Text>
                         <Text style={benefitItem}>✓ 7-day history retention</Text>
