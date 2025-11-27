@@ -51,7 +51,7 @@ export const SubscriptionCanceledEmail = ({
 
                     <Section style={freeSection}>
                         <Text style={freeSectionTitle}>FREE tier includes:</Text>
-                        <Text style={benefitItem}>✓ 3 analyses per day</Text>
+                        <Text style={benefitItem}>✓ 5 analyses total</Text>
                         <Text style={benefitItem}>✓ Basic friction reports</Text>
                         <Text style={benefitItem}>✓ 7-day history</Text>
                     </Section>
