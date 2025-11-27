@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
         }
 
         // Verify the signature using Paddle SDK
-        // Note: Paddle's signature verification is done differently than Stripe
         // The signature header contains: ts=timestamp;h1=signature
 
         // TEMPORARY: Skip signature verification for debugging
