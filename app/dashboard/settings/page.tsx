@@ -39,7 +39,7 @@ import { toast } from 'sonner';
 
 interface Subscription {
   tier: string;
-  stripe_subscription_id: string | null;
+  paddle_subscription_id: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
 }
@@ -71,7 +71,7 @@ export default function SettingsPage() {
 
         const { data: subData, error: subError } = await supabase
           .from('subscriptions')
-          .select('tier, stripe_subscription_id, current_period_end, cancel_at_period_end')
+          .select('tier, paddle_subscription_id, current_period_end, cancel_at_period_end')
           .eq('user_id', userData.id)
           .maybeSingle();
 
@@ -175,17 +175,16 @@ export default function SettingsPage() {
   const handleManageSubscription = async () => {
     setActionLoading(true);
     try {
-      const response = await fetch('/api/stripe-portal', {
-        method: 'POST',
-      });
+      // Paddle doesn't have a billing portal like Stripe
+      // Instead, direct users to contact support or cancel via settings
+      toast.info('To manage your subscription, please contact support or cancel below');
+      setActionLoading(false);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to open billing portal');
-      }
-
-      const { url } = await response.json();
-      window.location.href = url;
+      // Alternative: Open Paddle customer portal if you have subscription ID
+      // const paddleSubscriptionId = subscription?.paddle_subscription_id;
+      // if (paddleSubscriptionId) {
+      //   window.open(`https://sandbox-subscription-management.paddle.com/subscriptions/${paddleSubscriptionId}`, '_blank');
+      // }
     } catch (error) {
       console.error('Portal error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to open billing portal');
