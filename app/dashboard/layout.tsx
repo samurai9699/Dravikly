@@ -5,13 +5,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import {
   Home,
-  Plus,
-  Clock,
+  Zap,
+  History,
   Settings,
-  CreditCard,
   Menu,
   X,
   LogOut,
+  BarChart3,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -71,19 +72,19 @@ export default function DashboardLayout({ children }: LayoutProps) {
 
   const navigation = [
     {
-      name: 'Dashboard',
+      name: 'Overview',
       href: '/dashboard',
       icon: Home,
     },
     {
-      name: 'New Analysis',
+      name: 'Analyze',
       href: '/dashboard/analyze',
-      icon: Plus,
+      icon: Zap,
     },
     {
       name: 'History',
       href: '/dashboard/history',
-      icon: Clock,
+      icon: History,
     },
     {
       name: 'Settings',
@@ -91,17 +92,20 @@ export default function DashboardLayout({ children }: LayoutProps) {
       icon: Settings,
     },
     {
-      name: 'Billing',
-      href: '/dashboard/billing',
-      icon: CreditCard,
+      name: 'Help & Docs',
+      href: '/guide',
+      icon: HelpCircle,
     },
   ];
 
   const getTierColor = (tier: string) => {
-    switch (tier) {
-      case 'PRO':
+    const tierLower = tier.toLowerCase();
+    switch (tierLower) {
+      case 'starter':
         return 'bg-cyan-500/20 text-cyan-400 border-cyan-400/50';
-      case 'ULTRA':
+      case 'pro':
+        return 'bg-blue-500/20 text-blue-400 border-blue-400/50';
+      case 'enterprise':
         return 'bg-purple-500/20 text-purple-400 border-purple-400/50';
       default:
         return 'bg-slate-500/20 text-slate-400 border-slate-400/50';
@@ -146,38 +150,46 @@ export default function DashboardLayout({ children }: LayoutProps) {
               </button>
             </div>
 
-            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link key={item.name} href={item.href}>
-                    <div
-                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${isActive
-                        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-400/50'
-                        : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
-                        }`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span className="font-medium">{item.name}</span>
-                    </div>
-                  </Link>
-                );
-              })}
+            <nav className="flex-1 p-4 overflow-y-auto">
+              <div className="space-y-1">
+                {navigation.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link key={item.name} href={item.href}>
+                      <div
+                        className={`group relative flex items-center space-x-3 px-4 py-3 rounded-lg transition-all cursor-pointer ${isActive
+                            ? 'bg-cyan-500/20 text-cyan-400 shadow-lg shadow-cyan-500/10'
+                            : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                          }`}
+                      >
+                        {isActive && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-cyan-400 rounded-r" />
+                        )}
+                        <item.icon className="w-5 h-5" />
+                        <span className="font-medium">{item.name}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
             </nav>
 
-            <div className="p-4 border-t border-slate-700">
-              <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/30 rounded-lg p-4 mb-4">
-                <p className="text-sm text-slate-400 mb-2">Current Plan</p>
-                <Badge className={`${getTierColor(tier)} font-bold`}>
-                  {tier}
-                </Badge>
-                {tier === 'FREE' && (
+            <div className="p-4 border-t border-slate-700 space-y-3">
+              {/* Tier Badge */}
+              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-slate-400 font-medium">Current Plan</p>
+                  <Badge className={`${getTierColor(tier)} text-xs font-bold uppercase`}>
+                    {tier}
+                  </Badge>
+                </div>
+                {tier.toLowerCase() === 'free' && (
                   <Link href="/pricing">
                     <Button
-                      className="w-full mt-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-sm"
+                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-xs h-8"
                       size="sm"
                     >
-                      Upgrade Plan
+                      Upgrade Now
                     </Button>
                   </Link>
                 )}
