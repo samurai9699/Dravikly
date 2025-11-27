@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Crown, Zap, Sparkles } from 'lucide-react';
+import { AlertCircle, Crown, Zap, Sparkles, Rocket } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ interface UpgradeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   feature: string;
-  requiredTier: 'PRO' | 'ULTRA';
+  requiredTier: string;
   description: string;
 }
 
@@ -34,24 +34,35 @@ export function UpgradeModal({
     router.push('/pricing');
   };
 
-  const tierConfig = {
-    PRO: {
+  const tierConfig: Record<string, { icon: any; color: string; borderColor: string; bgColor: string; textColor: string; displayName: string }> = {
+    starter: {
+      icon: Rocket,
+      color: 'from-blue-500 to-cyan-500',
+      borderColor: 'border-blue-400/50',
+      bgColor: 'bg-blue-500/10',
+      textColor: 'text-blue-400',
+      displayName: 'Starter',
+    },
+    pro: {
       icon: Zap,
       color: 'from-cyan-500 to-blue-500',
       borderColor: 'border-cyan-400/50',
       bgColor: 'bg-cyan-500/10',
       textColor: 'text-cyan-400',
+      displayName: 'Pro',
     },
-    ULTRA: {
+    enterprise: {
       icon: Crown,
       color: 'from-purple-500 to-pink-500',
       borderColor: 'border-purple-400/50',
       bgColor: 'bg-purple-500/10',
       textColor: 'text-purple-400',
+      displayName: 'Enterprise',
     },
   };
 
-  const config = tierConfig[requiredTier];
+  const tierKey = requiredTier.toLowerCase();
+  const config = tierConfig[tierKey] || tierConfig.starter;
   const TierIcon = config.icon;
 
   return (
@@ -66,7 +77,7 @@ export function UpgradeModal({
             </div>
           </div>
           <DialogTitle className="text-center text-2xl font-bold">
-            Upgrade to {requiredTier}
+            Upgrade to {config.displayName}
           </DialogTitle>
           <DialogDescription className="text-center text-slate-400 pt-2">
             Unlock this premium feature and supercharge your conversion optimization
@@ -88,23 +99,23 @@ export function UpgradeModal({
             <div className="flex items-center space-x-2 mb-3">
               <Sparkles className={`w-4 h-4 ${config.textColor}`} />
               <h4 className="font-semibold text-white">
-                What you get with {requiredTier}:
+                What you get with {config.displayName}:
               </h4>
             </div>
             <ul className="space-y-2 text-sm text-slate-300">
-              {requiredTier === 'PRO' ? (
+              {tierKey === 'starter' && (
                 <>
                   <li className="flex items-start space-x-2">
                     <span className={`mt-1 ${config.textColor}`}>•</span>
-                    <span>20 analyses per day</span>
+                    <span>60 analyses per month</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className={`mt-1 ${config.textColor}`}>•</span>
-                    <span>Deep insights & recommendations</span>
+                    <span>Full insights & recommendations</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className={`mt-1 ${config.textColor}`}>•</span>
-                    <span>Full history access</span>
+                    <span>90-day history</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className={`mt-1 ${config.textColor}`}>•</span>
@@ -112,10 +123,35 @@ export function UpgradeModal({
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className={`mt-1 ${config.textColor}`}>•</span>
-                    <span>Priority email support</span>
+                    <span>Email support</span>
                   </li>
                 </>
-              ) : (
+              )}
+              {tierKey === 'pro' && (
+                <>
+                  <li className="flex items-start space-x-2">
+                    <span className={`mt-1 ${config.textColor}`}>•</span>
+                    <span>300 analyses per month</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className={`mt-1 ${config.textColor}`}>•</span>
+                    <span>Everything in Starter</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className={`mt-1 ${config.textColor}`}>•</span>
+                    <span>Unlimited history</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className={`mt-1 ${config.textColor}`}>•</span>
+                    <span>Priority processing</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className={`mt-1 ${config.textColor}`}>•</span>
+                    <span>Priority support</span>
+                  </li>
+                </>
+              )}
+              {tierKey === 'enterprise' && (
                 <>
                   <li className="flex items-start space-x-2">
                     <span className={`mt-1 ${config.textColor}`}>•</span>
@@ -123,23 +159,19 @@ export function UpgradeModal({
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className={`mt-1 ${config.textColor}`}>•</span>
-                    <span>Priority processing queue</span>
+                    <span>Everything in Pro</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className={`mt-1 ${config.textColor}`}>•</span>
-                    <span>Competitive benchmarking</span>
+                    <span>API access (Coming Soon)</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className={`mt-1 ${config.textColor}`}>•</span>
-                    <span>API access</span>
+                    <span>White-label reports (Coming Soon)</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className={`mt-1 ${config.textColor}`}>•</span>
-                    <span>White-label reports</span>
-                  </li>
-                  <li className="flex items-start space-x-2">
-                    <span className={`mt-1 ${config.textColor}`}>•</span>
-                    <span>Priority support</span>
+                    <span>5 team seats (Coming Soon)</span>
                   </li>
                 </>
               )}
@@ -159,7 +191,7 @@ export function UpgradeModal({
             onClick={handleUpgrade}
             className={`w-full sm:w-auto bg-gradient-to-r ${config.color} hover:opacity-90 text-white font-semibold`}
           >
-            Upgrade to {requiredTier}
+            Upgrade to {config.displayName}
           </Button>
         </DialogFooter>
       </DialogContent>
