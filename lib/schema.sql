@@ -1,5 +1,5 @@
 /*
-  # Initial Schema Setup
+  # Initial Schema Setup with Paddle
 
   1. New Tables
     - `users`
@@ -10,11 +10,13 @@
     - `subscriptions`
       - `id` (uuid, primary key) - Unique subscription identifier
       - `user_id` (uuid, foreign key) - Reference to users table
-      - `stripe_customer_id` (text, unique) - Stripe customer identifier
-      - `stripe_subscription_id` (text, unique) - Stripe subscription identifier
-      - `tier` (text, not null) - Subscription tier (free, pro, enterprise)
+      - `paddle_customer_id` (text, unique) - Paddle customer identifier
+      - `paddle_subscription_id` (text, unique) - Paddle subscription identifier
+      - `tier` (text, not null) - Subscription tier (free, starter, pro, enterprise)
       - `status` (text, not null) - Subscription status (active, canceled, past_due)
+      - `current_period_start` (timestamptz) - Current billing period start date
       - `current_period_end` (timestamptz) - Current billing period end date
+      - `cancel_at_period_end` (boolean) - Whether to cancel at period end
       - `created_at` (timestamptz) - Subscription creation timestamp
       - `updated_at` (timestamptz) - Last update timestamp
 
@@ -48,16 +50,18 @@ CREATE POLICY "Users can read own data"
 
 CREATE TABLE IF NOT EXISTS subscriptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  stripe_customer_id text UNIQUE,
-  stripe_subscription_id text UNIQUE,
+  user_id uuid UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  paddle_customer_id text,
+  paddle_subscription_id text,
   tier text NOT NULL DEFAULT 'free',
   status text NOT NULL DEFAULT 'active',
+  current_period_start timestamptz,
   current_period_end timestamptz,
+  cancel_at_period_end boolean DEFAULT false,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now(),
-  CONSTRAINT valid_tier CHECK (tier IN ('free', 'pro', 'enterprise')),
-  CONSTRAINT valid_status CHECK (status IN ('active', 'canceled', 'past_due', 'incomplete', 'trialing'))
+  CONSTRAINT valid_tier CHECK (tier IN ('free', 'starter', 'pro', 'enterprise')),
+  CONSTRAINT valid_status CHECK (status IN ('active', 'cancelled', 'canceled', 'past_due', 'incomplete', 'trialing', 'paused'))
 );
 
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
@@ -94,6 +98,7 @@ CREATE POLICY "Users can read own analyses"
   USING (user_id = auth.uid());
 
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_customer_id ON subscriptions(stripe_customer_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_paddle_customer_id ON subscriptions(paddle_customer_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_paddle_subscription_id ON subscriptions(paddle_subscription_id);
 CREATE INDEX IF NOT EXISTS idx_analyses_user_id ON analyses(user_id);
 CREATE INDEX IF NOT EXISTS idx_analyses_created_at ON analyses(created_at DESC);
