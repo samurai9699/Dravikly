@@ -783,7 +783,7 @@ export default function GuidePage() {
                 </Link>
               </div>
               <p className="text-sm text-slate-400 mt-6">
-                No credit card required • 3 free analyses per day • Upgrade anytime
+                No credit card required • 5 free analyses to start • Upgrade anytime
               </p>
             </section>
           </div>
