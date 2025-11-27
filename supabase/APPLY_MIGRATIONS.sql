@@ -67,8 +67,8 @@ DROP TYPE IF EXISTS stripe_order_status CASCADE;
 -- ============================================
 
 -- Uncomment to remove Stripe columns:
--- ALTER TABLE subscriptions DROP COLUMN IF EXISTS stripe_customer_id;
--- ALTER TABLE subscriptions DROP COLUMN IF EXISTS stripe_subscription_id;
+ ALTER TABLE subscriptions DROP COLUMN IF EXISTS stripe_customer_id;
+ ALTER TABLE subscriptions DROP COLUMN IF EXISTS stripe_subscription_id;
 
 -- ============================================
 -- Step 5: Verify the migration
