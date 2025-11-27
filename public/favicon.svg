@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+  </defs>
+  <!-- Rounded background with dark theme -->
+  <rect width="100" height="100" rx="20" fill="#1a1f2e"/>
+  <!-- Outer circle representing analysis/scanning -->
+  <circle cx="50" cy="50" r="38" stroke="url(#logo-gradient)" stroke-width="3" fill="none" opacity="0.3" />
+  <!-- Inner dynamic shape representing optimization/flow -->
+  <path
+    d="M 30 50 Q 40 30, 50 50 T 70 50"
+    stroke="url(#logo-gradient)"
+    stroke-width="4"
+    fill="none"
+    stroke-linecap="round"
+  />
+  <!-- Data points representing insights -->
+  <circle cx="30" cy="50" r="4.5" fill="url(#logo-gradient)" />
+  <circle cx="50" cy="50" r="4.5" fill="url(#logo-gradient)" />
+  <circle cx="70" cy="50" r="4.5" fill="url(#logo-gradient)" />
+  <!-- Upward arrow representing conversion lift -->
+  <path
+    d="M 50 68 L 50 42 M 42 50 L 50 42 L 58 50"
+    stroke="url(#logo-gradient)"
+    stroke-width="3.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.85"
+  />
+</svg>
