@@ -216,7 +216,7 @@ export default function PricingPage() {
     },
     {
       question: 'What payment methods do you accept?',
-      answer: 'We accept all major credit cards (Visa, Mastercard, American Express, Discover) through our secure payment processor, Stripe.',
+      answer: 'We accept all major credit cards (Visa, Mastercard, American Express, Discover) through our secure payment processor, Paddle.',
     },
     {
       question: 'Is there a free trial for paid plans?',
