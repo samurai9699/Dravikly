@@ -21,7 +21,7 @@ const PROGRESS_MESSAGES = [
 
 const EXAMPLE_URLS = [
   'shopify.com/signup',
-  'stripe.com/register',
+  'paddle.com/signup',
   'github.com/signup',
 ];
 
