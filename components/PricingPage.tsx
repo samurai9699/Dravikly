@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { stripeProducts } from '../src/stripe-config'
+import { PRICING_TIERS } from '../lib/paddle-config'
 import { ProductCard } from '@/src/components/ProductCard'
 import { useAuth } from '../src/hooks/useAuth'
 import { Alert } from '@/src/components/ui/Alert'
@@ -53,13 +53,15 @@ export function PricingPage({ onNavigate }: PricingPageProps) {
         )}
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {stripeProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onCheckout={handleCheckout}
-            />
-          ))}
+          {Object.values(PRICING_TIERS)
+            .filter(tier => tier.id !== 'free')
+            .map((tier) => (
+              <ProductCard
+                key={tier.id}
+                product={tier}
+                onCheckout={handleCheckout}
+              />
+            ))}
         </div>
 
         {!user && (
