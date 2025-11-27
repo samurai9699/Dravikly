@@ -1,14 +1,14 @@
 /*
-  # Create Subscriptions Table
+  # Create Subscriptions Table with Paddle
 
   1. New Tables
     - `subscriptions`
       - `id` (uuid, primary key) - Unique identifier for subscription
       - `user_id` (uuid, foreign key) - References auth.users
-      - `tier` (text) - Subscription tier: FREE, PRO, ULTRA
+      - `tier` (text) - Subscription tier: free, starter, pro, enterprise
       - `status` (text) - Subscription status: active, cancelled, past_due
-      - `stripe_customer_id` (text, nullable) - Stripe customer ID
-      - `stripe_subscription_id` (text, nullable) - Stripe subscription ID
+      - `paddle_customer_id` (text, nullable) - Paddle customer ID
+      - `paddle_subscription_id` (text, nullable) - Paddle subscription ID
       - `current_period_start` (timestamptz, nullable) - Current billing period start
       - `current_period_end` (timestamptz, nullable) - Current billing period end
       - `cancel_at_period_end` (boolean) - Whether to cancel at period end
@@ -23,18 +23,18 @@
     - Add policy for users to update their own subscription (limited fields)
 
   3. Important Notes
-    - Users are auto-assigned FREE tier on signup
+    - Users are auto-assigned free tier on signup
     - Daily analyses counter resets automatically
-    - Stripe IDs are nullable for free tier users
+    - Paddle IDs are nullable for free tier users
 */
 
 CREATE TABLE IF NOT EXISTS subscriptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  tier text NOT NULL DEFAULT 'FREE' CHECK (tier IN ('FREE', 'PRO', 'ULTRA')),
-  status text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'cancelled', 'past_due', 'trialing')),
-  stripe_customer_id text,
-  stripe_subscription_id text,
+  tier text NOT NULL DEFAULT 'free' CHECK (tier IN ('free', 'starter', 'pro', 'enterprise')),
+  status text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'cancelled', 'canceled', 'past_due', 'trialing', 'paused')),
+  paddle_customer_id text,
+  paddle_subscription_id text,
   current_period_start timestamptz,
   current_period_end timestamptz,
   cancel_at_period_end boolean DEFAULT false,
@@ -60,4 +60,5 @@ CREATE POLICY "Users can update own subscription analytics"
   WITH CHECK (auth.uid() = user_id);
 
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_customer ON subscriptions(stripe_customer_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_paddle_customer ON subscriptions(paddle_customer_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_paddle_subscription ON subscriptions(paddle_subscription_id);
