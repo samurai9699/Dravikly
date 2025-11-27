@@ -159,7 +159,7 @@ export default function SignupPage() {
               <div>
                 <p className="text-sm text-cyan-400 font-semibold">Free tier includes:</p>
                 <ul className="text-sm text-slate-300 mt-2 space-y-1">
-                  <li>• 3 analyses per day</li>
+                  <li>• 5 analyses total</li>
                   <li>• Basic friction reports</li>
                   <li>• Community support</li>
                 </ul>
