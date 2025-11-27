@@ -128,11 +128,7 @@ export default function DashboardPage() {
         if (allAnalysesResult.data && allAnalysesResult.data.length > 0) {
           const completedAnalyses = allAnalysesResult.data.filter(a => a.friction_score !== null);
 
-          console.log('Dashboard Debug:', {
-            totalAnalyses: allAnalysesResult.data.length,
-            completedWithScore: completedAnalyses.length,
-            sampleData: completedAnalyses.slice(0, 2)
-          });
+
 
           if (completedAnalyses.length > 0) {
             // Calculate average
@@ -147,7 +143,6 @@ export default function DashboardPage() {
 
             // Only set trend if we have at least 1 data point
             if (trendData.length > 0) {
-              console.log('Setting friction trend data:', trendData);
               setFrictionTrend(trendData);
             }
 
@@ -486,9 +481,7 @@ export default function DashboardPage() {
                     Complete more analyses to see your trend over time
                   </p>
                 )}
-                <div className="mt-2 text-xs text-slate-500 text-center">
-                  Showing {frictionTrend.length} data point{frictionTrend.length !== 1 ? 's' : ''}
-                </div>
+
               </>
             ) : (
               <div className="h-64 flex flex-col items-center justify-center text-center px-4">
