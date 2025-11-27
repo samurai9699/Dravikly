@@ -202,6 +202,18 @@ async function handleTransactionCompleted(data: any) {
             // This is a subscription payment
             const subscription = await paddle.subscriptions.get(subscriptionId);
 
+            // Calculate period end - if Paddle's date seems wrong, calculate it ourselves
+            let periodEnd = subscription.currentBillingPeriod?.endsAt;
+            const periodStart = subscription.currentBillingPeriod?.startsAt || new Date().toISOString();
+
+            // If no end date or it seems wrong (before start date), calculate it
+            if (!periodEnd || new Date(periodEnd) <= new Date(periodStart)) {
+                const startDate = new Date(periodStart);
+                // Add 1 month for monthly subscriptions
+                startDate.setMonth(startDate.getMonth() + 1);
+                periodEnd = startDate.toISOString();
+            }
+
             const { error } = await supabaseAdmin
                 .from('subscriptions')
                 .upsert({
@@ -210,8 +222,8 @@ async function handleTransactionCompleted(data: any) {
                     status: subscription.status === 'trialing' ? 'trialing' : 'active',
                     paddle_customer_id: customerId,
                     paddle_subscription_id: subscriptionId,
-                    current_period_start: subscription.currentBillingPeriod?.startsAt || new Date().toISOString(),
-                    current_period_end: subscription.currentBillingPeriod?.endsAt || null,
+                    current_period_start: periodStart,
+                    current_period_end: periodEnd,
                     cancel_at_period_end: subscription.scheduledChange?.action === 'cancel',
                     updated_at: new Date().toISOString(),
                 }, {
@@ -276,6 +288,18 @@ async function handleSubscriptionCreated(data: any) {
 
         if (userId) {
             // We have userId from custom_data - create or update subscription
+            // Calculate period end - if Paddle's date seems wrong, calculate it ourselves
+            let periodEnd = data.current_billing_period?.ends_at;
+            const periodStart = data.current_billing_period?.starts_at || new Date().toISOString();
+
+            // If no end date or it seems wrong (before start date), calculate it
+            if (!periodEnd || new Date(periodEnd) <= new Date(periodStart)) {
+                const startDate = new Date(periodStart);
+                // Add 1 month for monthly subscriptions
+                startDate.setMonth(startDate.getMonth() + 1);
+                periodEnd = startDate.toISOString();
+            }
+
             const { error } = await supabaseAdmin
                 .from('subscriptions')
                 .upsert({
@@ -284,8 +308,8 @@ async function handleSubscriptionCreated(data: any) {
                     status: data.status === 'trialing' ? 'trialing' : 'active',
                     paddle_customer_id: customerId,
                     paddle_subscription_id: subscriptionId,
-                    current_period_start: data.current_billing_period?.starts_at || new Date().toISOString(),
-                    current_period_end: data.current_billing_period?.ends_at || null,
+                    current_period_start: periodStart,
+                    current_period_end: periodEnd,
                     cancel_at_period_end: data.scheduled_change?.action === 'cancel',
                     updated_at: new Date().toISOString(),
                 }, {
@@ -313,14 +337,26 @@ async function handleSubscriptionCreated(data: any) {
 
             if (existingSubscription) {
                 // Update existing subscription
+                // Calculate period end - if Paddle's date seems wrong, calculate it ourselves
+                let periodEnd = data.current_billing_period?.ends_at;
+                const periodStart = data.current_billing_period?.starts_at || new Date().toISOString();
+
+                // If no end date or it seems wrong (before start date), calculate it
+                if (!periodEnd || new Date(periodEnd) <= new Date(periodStart)) {
+                    const startDate = new Date(periodStart);
+                    // Add 1 month for monthly subscriptions
+                    startDate.setMonth(startDate.getMonth() + 1);
+                    periodEnd = startDate.toISOString();
+                }
+
                 const { error } = await supabaseAdmin
                     .from('subscriptions')
                     .update({
                         tier: tier.toLowerCase(),
                         status: data.status === 'trialing' ? 'trialing' : 'active',
                         paddle_subscription_id: subscriptionId,
-                        current_period_start: data.current_billing_period?.starts_at || new Date().toISOString(),
-                        current_period_end: data.current_billing_period?.ends_at || null,
+                        current_period_start: periodStart,
+                        current_period_end: periodEnd,
                         cancel_at_period_end: data.scheduled_change?.action === 'cancel',
                         updated_at: new Date().toISOString(),
                     })
@@ -373,10 +409,22 @@ async function handleSubscriptionUpdated(data: any) {
             return;
         }
 
+        // Calculate period end - if Paddle's date seems wrong, calculate it ourselves
+        let periodEnd = data.current_billing_period?.ends_at;
+        const periodStart = data.current_billing_period?.starts_at || new Date().toISOString();
+
+        // If no end date or it seems wrong (before start date), calculate it
+        if (!periodEnd || new Date(periodEnd) <= new Date(periodStart)) {
+            const startDate = new Date(periodStart);
+            // Add 1 month for monthly subscriptions
+            startDate.setMonth(startDate.getMonth() + 1);
+            periodEnd = startDate.toISOString();
+        }
+
         const updateData: any = {
             status: data.status === 'trialing' ? 'trialing' : data.status,
-            current_period_start: data.current_billing_period?.starts_at || new Date().toISOString(),
-            current_period_end: data.current_billing_period?.ends_at || null,
+            current_period_start: periodStart,
+            current_period_end: periodEnd,
             cancel_at_period_end: data.scheduled_change?.action === 'cancel',
             updated_at: new Date().toISOString(),
         };
