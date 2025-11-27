@@ -175,8 +175,7 @@ export default function SettingsPage() {
   const handleManageSubscription = async () => {
     setActionLoading(true);
     try {
-      // Paddle doesn't have a billing portal like Stripe
-      // Instead, direct users to contact support or cancel via settings
+      // Direct users to contact support or cancel via settings
       toast.info('To manage your subscription, please contact support or cancel below');
       setActionLoading(false);
 
