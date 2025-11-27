@@ -8,26 +8,15 @@ import { Card, CardContent } from '@/components/ui/card';
 
 interface UsageIndicatorProps {
   tier: string;
-  analysesUsedToday: number;
+  analysesUsedThisMonth: number;
+  monthlyLimit: number | string;
 }
 
-export function UsageIndicator({ tier, analysesUsedToday }: UsageIndicatorProps) {
-  const getLimit = (tier: string): number | null => {
-    switch (tier) {
-      case 'PRO':
-        return 20;
-      case 'FREE':
-        return 3;
-      case 'ULTRA':
-        return null;
-      default:
-        return 3;
-    }
-  };
+export function UsageIndicator({ tier, analysesUsedThisMonth, monthlyLimit }: UsageIndicatorProps) {
+  const isUnlimited = monthlyLimit === 'Unlimited' || monthlyLimit === -1;
+  const limit = typeof monthlyLimit === 'number' ? monthlyLimit : null;
 
-  const limit = getLimit(tier);
-
-  if (tier === 'ULTRA' || limit === null) {
+  if (isUnlimited || limit === null) {
     return (
       <Card className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 border border-purple-400/30">
         <CardContent className="p-6">
@@ -41,7 +30,7 @@ export function UsageIndicator({ tier, analysesUsedToday }: UsageIndicatorProps)
                   Unlimited Access
                 </h3>
                 <p className="text-sm text-slate-300">
-                  {analysesUsedToday} analyses run today
+                  {analysesUsedThisMonth} analyses this month
                 </p>
               </div>
             </div>
@@ -54,9 +43,9 @@ export function UsageIndicator({ tier, analysesUsedToday }: UsageIndicatorProps)
     );
   }
 
-  const percentage = (analysesUsedToday / limit) * 100;
-  const remaining = Math.max(0, limit - analysesUsedToday);
-  const isLimitReached = analysesUsedToday >= limit;
+  const percentage = (analysesUsedThisMonth / limit) * 100;
+  const remaining = Math.max(0, limit - analysesUsedThisMonth);
+  const isLimitReached = analysesUsedThisMonth >= limit;
 
   const getProgressColor = () => {
     if (percentage < 50) return 'bg-green-500';
@@ -76,36 +65,34 @@ export function UsageIndicator({ tier, analysesUsedToday }: UsageIndicatorProps)
 
   const getStatusText = () => {
     if (isLimitReached) {
-      return 'Daily limit reached';
+      return 'Monthly limit reached';
     }
     if (percentage >= 80) {
-      return 'Approaching daily limit';
+      return 'Approaching monthly limit';
     }
-    return 'Usage tracking';
+    return 'Monthly usage';
   };
 
   return (
     <Card
-      className={`border transition-colors ${
-        isLimitReached
-          ? 'bg-red-500/5 border-red-400/30'
-          : percentage >= 80
+      className={`border transition-colors ${isLimitReached
+        ? 'bg-red-500/5 border-red-400/30'
+        : percentage >= 80
           ? 'bg-yellow-500/5 border-yellow-400/30'
           : 'bg-slate-800/50 border-cyan-400/20'
-      }`}
+        }`}
     >
       <CardContent className="p-6">
         <div className="space-y-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
               <div
-                className={`p-3 rounded-lg ${
-                  isLimitReached
-                    ? 'bg-red-500/20'
-                    : percentage >= 80
+                className={`p-3 rounded-lg ${isLimitReached
+                  ? 'bg-red-500/20'
+                  : percentage >= 80
                     ? 'bg-yellow-500/20'
                     : 'bg-green-500/20'
-                }`}
+                  }`}
               >
                 {getStatusIcon()}
               </div>
@@ -114,19 +101,18 @@ export function UsageIndicator({ tier, analysesUsedToday }: UsageIndicatorProps)
                   {getStatusText()}
                 </h3>
                 <p className="text-sm text-slate-300">
-                  {analysesUsedToday} of {limit} analyses used today
+                  {analysesUsedThisMonth} of {limit} analyses this month
                 </p>
               </div>
             </div>
             <div className="text-right">
               <div
-                className={`text-3xl font-bold ${
-                  isLimitReached
-                    ? 'text-red-400'
-                    : percentage >= 80
+                className={`text-3xl font-bold ${isLimitReached
+                  ? 'text-red-400'
+                  : percentage >= 80
                     ? 'text-yellow-400'
                     : 'text-green-400'
-                }`}
+                  }`}
               >
                 {remaining}
               </div>
@@ -144,7 +130,7 @@ export function UsageIndicator({ tier, analysesUsedToday }: UsageIndicatorProps)
             <div className="flex justify-between text-xs text-slate-400">
               <span>0</span>
               <span className="font-semibold">
-                {analysesUsedToday} / {limit}
+                {analysesUsedThisMonth} / {limit}
               </span>
               <span>{limit}</span>
             </div>
@@ -157,10 +143,10 @@ export function UsageIndicator({ tier, analysesUsedToday }: UsageIndicatorProps)
                   <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-semibold text-red-400 mb-1">
-                      Daily limit reached
+                      Monthly limit reached
                     </p>
                     <p className="text-sm text-slate-300">
-                      Upgrade your plan to analyze more pages today and unlock premium features
+                      Upgrade your plan to analyze more pages this month and unlock premium features
                     </p>
                   </div>
                 </div>
