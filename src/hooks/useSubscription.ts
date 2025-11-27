@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { getProductByPriceId } from '../stripe-config'
+import { TierName } from '../../lib/paddle-config'
 
 interface Subscription {
-  subscription_status: string
-  price_id: string | null
-  current_period_end: number | null
+  tier: TierName
+  status: string
+  paddle_subscription_id: string | null
+  current_period_end: string | null
   cancel_at_period_end: boolean
 }
 
@@ -19,9 +20,17 @@ export function useSubscription() {
 
   const fetchSubscription = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        setLoading(false)
+        return
+      }
+
       const { data, error } = await supabase
-        .from('stripe_user_subscriptions')
-        .select('subscription_status, price_id, current_period_end, cancel_at_period_end')
+        .from('subscriptions')
+        .select('tier, status, paddle_subscription_id, current_period_end, cancel_at_period_end')
+        .eq('user_id', user.id)
         .maybeSingle()
 
       if (error) {
@@ -38,10 +47,8 @@ export function useSubscription() {
   }
 
   const getActivePlan = () => {
-    if (!subscription || !subscription.price_id) return null
-    
-    const product = getProductByPriceId(subscription.price_id)
-    return product?.name || null
+    if (!subscription) return 'free'
+    return subscription.tier
   }
 
   return { subscription, loading, getActivePlan, refetch: fetchSubscription }
