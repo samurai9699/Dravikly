@@ -523,11 +523,19 @@ export default function SettingsPage() {
                       <span className="text-sm text-slate-400">Next Billing Date</span>
                     </div>
                     <p className="text-white font-semibold">
-                      {new Date(subscription.current_period_end).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
+                      {(() => {
+                        try {
+                          const date = new Date(subscription.current_period_end);
+                          return date.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            timeZone: 'UTC'
+                          });
+                        } catch (e) {
+                          return 'Invalid date';
+                        }
+                      })()}
                     </p>
                     {subscription.cancel_at_period_end && (
                       <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-400/50 mt-2">
