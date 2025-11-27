@@ -55,14 +55,14 @@ export default function ResultsPage() {
   const router = useRouter();
   const params = useParams();
   const supabase = createClient();
-  
+
   // Safe parameter extraction
   const analysisId = params?.id
-     ? Array.isArray(params.id)
-     ? params.id[0]
-     : params.id
-     : null;
-  
+    ? Array.isArray(params.id)
+      ? params.id[0]
+      : params.id
+    : null;
+
   useEffect(() => {
     // Early return if no valid ID
     if (!analysisId) {
@@ -193,7 +193,7 @@ export default function ResultsPage() {
   };
 
   const handleDownloadPDF = async () => {
-    if (tier === 'FREE') {
+    if (tier.toLowerCase() === 'free') {
       setShowUpgradeModal(true);
       return;
     }
@@ -505,13 +505,12 @@ export default function ResultsPage() {
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0 mb-4">
                       <div className="flex items-center space-x-3">
                         <div
-                          className={`p-2 rounded-lg ${
-                            issue.severity === 'high'
-                              ? 'bg-red-500/20'
-                              : issue.severity === 'medium'
+                          className={`p-2 rounded-lg ${issue.severity === 'high'
+                            ? 'bg-red-500/20'
+                            : issue.severity === 'medium'
                               ? 'bg-yellow-500/20'
                               : 'bg-green-500/20'
-                          }`}
+                            }`}
                         >
                           {getSeverityIcon(issue.severity)}
                         </div>
@@ -577,7 +576,7 @@ export default function ResultsPage() {
         open={showUpgradeModal}
         onOpenChange={setShowUpgradeModal}
         feature="PDF Export"
-        requiredTier="PRO"
+        requiredTier="starter"
         description="Download professional PDF reports of your friction analysis. Perfect for sharing with your team or clients."
       />
     </div>
