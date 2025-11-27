@@ -42,6 +42,7 @@ interface Subscription {
   paddle_subscription_id: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  email_notifications: boolean;
 }
 
 export default function SettingsPage() {
@@ -52,7 +53,10 @@ export default function SettingsPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [passwordChangeLoading, setPasswordChangeLoading] = useState(false);
-  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab = useSearchParams()?.get('tab') ?? 'account';
@@ -74,6 +78,11 @@ export default function SettingsPage() {
           .select('tier, paddle_subscription_id, current_period_end, cancel_at_period_end')
           .eq('user_id', userData.id)
           .maybeSingle();
+
+        // Add email_notifications default if column doesn't exist yet
+        if (subData) {
+          (subData as any).email_notifications = true;
+        }
 
         if (subError) {
           console.error('Error loading subscription:', subError);
@@ -106,35 +115,119 @@ export default function SettingsPage() {
   }, [router, supabase]);
 
   const getTierBadge = (tier: string) => {
-    switch (tier) {
-      case 'FREE':
+    const tierLower = tier.toLowerCase();
+    switch (tierLower) {
+      case 'free':
         return <Badge className="bg-slate-500/20 text-slate-400 border-slate-400/50">Free</Badge>;
-      case 'PRO':
-        return <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-400/50">Pro</Badge>;
-      case 'ULTRA':
-        return <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/50">Ultra</Badge>;
+      case 'starter':
+        return <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-400/50">Starter</Badge>;
+      case 'pro':
+        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/50">Pro</Badge>;
+      case 'enterprise':
+        return <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/50">Enterprise</Badge>;
       default:
-        return <Badge className="bg-slate-500/20 text-slate-400 border-slate-400/50">{tier}</Badge>;
+        return <Badge className="bg-slate-500/20 text-slate-400 border-slate-400/50 capitalize">{tier}</Badge>;
     }
   };
 
   const handleChangePassword = async () => {
-    if (!user?.email) return;
+    if (!newPassword || !confirmPassword) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
 
     setPasswordChangeLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
       });
 
       if (error) throw error;
 
-      toast.success('Password reset email sent! Check your inbox.');
+      toast.success('Password updated successfully!');
+      setShowPasswordForm(false);
+      setNewPassword('');
+      setConfirmPassword('');
     } catch (error) {
-      console.error('Password reset error:', error);
-      toast.error('Failed to send password reset email. Please try again.');
+      console.error('Password change error:', error);
+      toast.error('Failed to change password. Please try again.');
     } finally {
       setPasswordChangeLoading(false);
+    }
+  };
+
+  const handleToggleNotifications = async (enabled: boolean) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('subscriptions')
+        .update({ email_notifications: enabled })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setSubscription(prev => prev ? { ...prev, email_notifications: enabled } : null);
+      toast.success(enabled ? 'Email notifications enabled' : 'Email notifications disabled');
+    } catch (error) {
+      console.error('Toggle notifications error:', error);
+      toast.error('Failed to update notification settings');
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!subscription?.paddle_subscription_id) {
+      toast.error('No active subscription found');
+      return;
+    }
+
+    setCancelLoading(true);
+    try {
+      const response = await fetch('/api/paddle/cancel-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscriptionId: subscription.paddle_subscription_id
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to cancel subscription');
+      }
+
+      toast.success('Subscription will be cancelled at the end of the billing period');
+
+      // Refresh subscription data
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('tier, paddle_subscription_id, current_period_end, cancel_at_period_end')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (subData) {
+        (subData as any).email_notifications = true;
+      }
+
+      if (subData) {
+        setSubscription(subData as Subscription);
+      }
+    } catch (error) {
+      console.error('Cancel subscription error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to cancel subscription');
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -312,27 +405,68 @@ export default function SettingsPage() {
                 Change your password to keep your account secure
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button
-                onClick={handleChangePassword}
-                disabled={passwordChangeLoading}
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
-              >
-                {passwordChangeLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Sending Email...
-                  </>
-                ) : (
-                  <>
-                    <Key className="w-4 h-4 mr-2" />
-                    Change Password
-                  </>
-                )}
-              </Button>
-              <p className="text-sm text-slate-500 mt-3">
-                We'll send you an email with instructions to reset your password
-              </p>
+            <CardContent className="space-y-4">
+              {!showPasswordForm ? (
+                <Button
+                  onClick={() => setShowPasswordForm(true)}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+                >
+                  <Key className="w-4 h-4 mr-2" />
+                  Change Password
+                </Button>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="new-password" className="text-white">New Password</Label>
+                    <input
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      className="w-full mt-2 px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/20"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="confirm-password" className="text-white">Confirm Password</Label>
+                    <input
+                      id="confirm-password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm new password"
+                      className="w-full mt-2 px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/20"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={handleChangePassword}
+                      disabled={passwordChangeLoading}
+                      className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+                    >
+                      {passwordChangeLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        'Update Password'
+                      )}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setShowPasswordForm(false);
+                        setNewPassword('');
+                        setConfirmPassword('');
+                      }}
+                      variant="outline"
+                      className="border-slate-700 text-slate-300 hover:bg-slate-700/50"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -410,20 +544,21 @@ export default function SettingsPage() {
                   </div>
                   <p className="text-white font-semibold text-2xl">{analysisCount}</p>
                   <p className="text-sm text-slate-500 mt-1">
-                    {subscription?.tier === 'FREE' && '5 per month limit'}
-                    {subscription?.tier === 'PRO' && '50 per month limit'}
-                    {subscription?.tier === 'ULTRA' && 'Unlimited'}
+                    {subscription?.tier?.toLowerCase() === 'free' && '5 per month limit'}
+                    {subscription?.tier?.toLowerCase() === 'starter' && '60 per month limit'}
+                    {subscription?.tier?.toLowerCase() === 'pro' && '300 per month limit'}
+                    {subscription?.tier?.toLowerCase() === 'enterprise' && 'Unlimited'}
                   </p>
                 </div>
               </div>
 
-              {subscription?.tier === 'FREE' ? (
+              {subscription?.tier?.toLowerCase() === 'free' ? (
                 <div className="p-6 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 rounded-lg border border-cyan-400/30">
                   <h3 className="text-lg font-semibold text-white mb-2">
                     Unlock More Features
                   </h3>
                   <p className="text-slate-400 mb-4">
-                    Upgrade to Pro or Ultra to get unlimited analyses, PDF exports, and priority
+                    Upgrade to Pro or Enterprise to get more analyses, PDF exports, and priority
                     support.
                   </p>
                   <Button
@@ -435,23 +570,32 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               ) : (
-                <Button
-                  onClick={handleManageSubscription}
-                  disabled={actionLoading}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
-                >
-                  {actionLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Opening Portal...
-                    </>
-                  ) : (
-                    <>
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Manage Subscription
-                    </>
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => router.push('/pricing')}
+                    className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Change Plan
+                  </Button>
+                  {!subscription?.cancel_at_period_end && (
+                    <Button
+                      onClick={handleCancelSubscription}
+                      disabled={cancelLoading}
+                      variant="outline"
+                      className="border-red-400/50 text-red-400 hover:bg-red-400/10"
+                    >
+                      {cancelLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Cancelling...
+                        </>
+                      ) : (
+                        'Cancel Subscription'
+                      )}
+                    </Button>
                   )}
-                </Button>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -465,43 +609,79 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {subscription?.tier === 'FREE' && (
+                {subscription?.tier?.toLowerCase() === 'free' && (
                   <>
                     <div className="flex items-center space-x-3 text-slate-300">
-                      <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
                       <span>5 analyses per month</span>
                     </div>
                     <div className="flex items-center space-x-3 text-slate-300">
-                      <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
-                      <span>View last 5 analyses</span>
+                      <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+                      <span>7-day history</span>
                     </div>
                     <div className="flex items-center space-x-3 text-slate-300">
-                      <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
-                      <span>Basic friction analysis</span>
+                      <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+                      <span>Basic friction score</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-slate-300">
+                      <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+                      <span>Community support</span>
                     </div>
                   </>
                 )}
-                {subscription?.tier === 'PRO' && (
+                {subscription?.tier?.toLowerCase() === 'starter' && (
                   <>
                     <div className="flex items-center space-x-3 text-slate-300">
                       <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
-                      <span>50 analyses per month</span>
+                      <span>60 analyses per month</span>
                     </div>
                     <div className="flex items-center space-x-3 text-slate-300">
                       <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
-                      <span>Unlimited history access</span>
+                      <span>90-day history</span>
                     </div>
                     <div className="flex items-center space-x-3 text-slate-300">
                       <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
-                      <span>PDF export reports</span>
+                      <span>Full insights + recommendations</span>
                     </div>
                     <div className="flex items-center space-x-3 text-slate-300">
                       <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
-                      <span>Priority email support</span>
+                      <span>PDF export</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-slate-300">
+                      <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
+                      <span>Email support</span>
                     </div>
                   </>
                 )}
-                {subscription?.tier === 'ULTRA' && (
+                {subscription?.tier?.toLowerCase() === 'pro' && (
+                  <>
+                    <div className="flex items-center space-x-3 text-slate-300">
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                      <span>300 analyses per month</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-slate-300">
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                      <span>Unlimited history</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-slate-300">
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                      <span>PDF export</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-slate-300">
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                      <span>Priority processing</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-slate-300">
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                      <span>API access (rate limited)</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-slate-300">
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                      <span>Priority support</span>
+                    </div>
+                  </>
+                )}
+                {subscription?.tier?.toLowerCase() === 'enterprise' && (
                   <>
                     <div className="flex items-center space-x-3 text-slate-300">
                       <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
@@ -509,19 +689,27 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex items-center space-x-3 text-slate-300">
                       <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-                      <span>Unlimited history access</span>
+                      <span>Unlimited history</span>
                     </div>
                     <div className="flex items-center space-x-3 text-slate-300">
                       <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-                      <span>PDF export reports</span>
+                      <span>PDF export</span>
                     </div>
                     <div className="flex items-center space-x-3 text-slate-300">
                       <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-                      <span>API access</span>
+                      <span>Full API access</span>
                     </div>
                     <div className="flex items-center space-x-3 text-slate-300">
                       <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-                      <span>Priority support + Slack access</span>
+                      <span>White-label reports</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-slate-300">
+                      <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                      <span>5 team seats</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-slate-300">
+                      <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                      <span>Priority support</span>
                     </div>
                   </>
                 )}
@@ -553,19 +741,21 @@ export default function SettingsPage() {
                 </div>
                 <Switch
                   id="email-notifications"
-                  checked={emailNotifications}
-                  onCheckedChange={setEmailNotifications}
+                  checked={subscription?.email_notifications ?? true}
+                  onCheckedChange={handleToggleNotifications}
                   className="data-[state=checked]:bg-cyan-500"
                 />
               </div>
 
-              <Alert className="bg-cyan-500/10 border-cyan-400/50">
-                <AlertCircle className="h-4 w-4 text-cyan-400" />
-                <AlertDescription className="text-slate-300">
-                  Email notifications are currently enabled. You'll receive updates when your friction
-                  analyses are completed.
-                </AlertDescription>
-              </Alert>
+              {subscription?.email_notifications && (
+                <Alert className="bg-cyan-500/10 border-cyan-400/50">
+                  <AlertCircle className="h-4 w-4 text-cyan-400" />
+                  <AlertDescription className="text-slate-300">
+                    Email notifications are enabled. You'll receive updates when your friction
+                    analyses are completed.
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
           </Card>
 
