@@ -7,10 +7,15 @@ import SubscriptionCanceledEmail from '@/emails/subscription-canceled';
 import PaymentFailedEmail from '@/emails/payment-failed';
 import ContactFormSubmissionEmail from '@/emails/contact-form-submission';
 import UsageLimitWarningEmail from '@/emails/usage-limit-warning';
+import CareerInterestEmail from '@/emails/career-interest';
 
 export interface SendWelcomeEmailParams {
     to: string;
     userName?: string;
+}
+
+export interface SendCareerInterestParams {
+    to: string;
 }
 
 export interface SendAnalysisCompleteParams {
@@ -332,6 +337,35 @@ export class EmailService {
             return data;
         } catch (error) {
             console.error('Failed to send usage limit warning email:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Send career interest confirmation
+     */
+    static async sendCareerInterestEmail({ to }: SendCareerInterestParams) {
+        try {
+            const emailHtml = await render(
+                CareerInterestEmail({ userEmail: to })
+            );
+
+            const { data, error } = await resend.emails.send({
+                from: FROM_EMAIL,
+                to,
+                subject: 'Thanks for your interest in joining Dravikly! 🚀',
+                html: emailHtml,
+            });
+
+            if (error) {
+                console.error('Error sending career interest email:', error);
+                throw error;
+            }
+
+            console.log('Career interest email sent:', data?.id);
+            return data;
+        } catch (error) {
+            console.error('Failed to send career interest email:', error);
             throw error;
         }
     }
