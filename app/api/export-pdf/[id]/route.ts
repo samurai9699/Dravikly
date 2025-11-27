@@ -322,9 +322,9 @@ export async function GET(
       );
     }
 
-    if (subscription.tier === 'FREE') {
+    if (subscription.tier?.toLowerCase() === 'free') {
       return NextResponse.json(
-        { error: 'Upgrade to Pro for PDF export' },
+        { error: 'Upgrade to Starter or Pro for PDF export' },
         { status: 403 }
       );
     }
