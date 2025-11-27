@@ -44,16 +44,28 @@ export default function AnalyzePage() {
         return;
       }
 
+      // Get subscription tier
       const { data: subscription } = await supabase
         .from('subscriptions')
-        .select('tier, analyses_used_today')
+        .select('tier')
         .eq('user_id', user.id)
         .maybeSingle();
 
       if (subscription) {
         setTier(subscription.tier);
-        setAnalysesUsed(subscription.analyses_used_today);
       }
+
+      // Get monthly usage count from analyses table
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const { count } = await supabase
+        .from('analyses')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', monthStart.toISOString());
+
+      setAnalysesUsed(count || 0);
     };
 
     loadUserData();
@@ -100,13 +112,15 @@ export default function AnalyzePage() {
   };
 
   const checkLimit = () => {
-    const limits = {
-      FREE: 3,
-      PRO: 20,
-      ULTRA: Infinity,
+    const limits: Record<string, number> = {
+      free: 5,
+      starter: 60,
+      pro: 300,
+      enterprise: Infinity,
     };
 
-    const limit = limits[tier as keyof typeof limits] || 3;
+    const tierLower = tier.toLowerCase();
+    const limit = limits[tierLower] || 5;
     return analysesUsed >= limit;
   };
 
@@ -315,12 +329,14 @@ export default function AnalyzePage() {
       <UpgradeModal
         open={showUpgradeModal}
         onOpenChange={setShowUpgradeModal}
-        feature="Daily Analysis Limit"
-        requiredTier={tier === 'FREE' ? 'PRO' : 'ULTRA'}
+        feature="Monthly Analysis Limit"
+        requiredTier={tier.toLowerCase() === 'free' ? 'starter' : tier.toLowerCase() === 'starter' ? 'pro' : 'enterprise'}
         description={
-          tier === 'FREE'
-            ? "You've used all 3 analyses for today. Upgrade to PRO for 20 analyses per day, or ULTRA for unlimited analyses."
-            : "You've used all 20 analyses for today. Upgrade to ULTRA for unlimited analyses and priority processing."
+          tier.toLowerCase() === 'free'
+            ? "You've used all 5 analyses for this month. Upgrade to Starter for 60 analyses/month, or Pro for 300."
+            : tier.toLowerCase() === 'starter'
+              ? "You've used all 60 analyses for this month. Upgrade to Pro for 300 analyses/month."
+              : "You've used all 300 analyses for this month. Upgrade to Enterprise for unlimited analyses."
         }
       />
     </div>
