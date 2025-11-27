@@ -11,9 +11,27 @@ export default function CareersPage() {
 
     const handleNotifyMe = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Add email notification logic
-        setSubmitted(true);
-        setTimeout(() => setSubmitted(false), 3000);
+
+        try {
+            const response = await fetch('/api/careers/notify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit');
+            }
+
+            setSubmitted(true);
+            setEmail('');
+            setTimeout(() => setSubmitted(false), 5000);
+        } catch (error) {
+            console.error('Error submitting email:', error);
+            alert('Something went wrong. Please try again.');
+        }
     };
 
     return (
@@ -172,7 +190,7 @@ export default function CareersPage() {
                                     <div className="max-w-md mx-auto p-6 bg-green-500/10 border border-green-500/30 rounded-lg">
                                         <p className="text-green-400 font-semibold flex items-center justify-center">
                                             <Sparkles className="w-5 h-5 mr-2" />
-                                            Thanks! We'll reach out when positions open up.
+                                            Thanks! Check your email for confirmation.
                                         </p>
                                     </div>
                                 )}
@@ -238,7 +256,7 @@ export default function CareersPage() {
                             Drop us a line and tell us what you're passionate about.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                            <a href="mailto:careers@dravikly.com">
+                            <Link href="/contact">
                                 <Button
                                     size="lg"
                                     className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-6 text-lg"
@@ -247,7 +265,7 @@ export default function CareersPage() {
                                     Get in Touch
                                     <ArrowRight className="w-5 h-5 ml-2" />
                                 </Button>
-                            </a>
+                            </Link>
                             <Link href="/">
                                 <Button
                                     size="lg"
