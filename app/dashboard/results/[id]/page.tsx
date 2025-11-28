@@ -304,7 +304,7 @@ export default function ResultsPage() {
                 Analysis in Progress
               </h2>
               <p className="text-slate-400">
-                We're analyzing {analysis.url} for friction points. This usually takes 10-30 seconds.
+                We're analyzing {analysis.url} for friction points. This usually takes 30-60 seconds.
               </p>
               <div className="w-full bg-slate-700 rounded-full h-2 mt-6">
                 <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full animate-pulse w-3/4"></div>
