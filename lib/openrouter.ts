@@ -84,7 +84,7 @@ export async function analyzeWebsiteFriction(
             },
             {
               role: 'user',
-              content: `URL: ${url}\n\nHTML Content:\n${html.slice(0, 50000)}`,
+              content: `URL: ${url}\n\nHTML Content:\n${html.slice(0, 25000)}`,
             },
           ],
           response_format: { type: 'json_object' },
