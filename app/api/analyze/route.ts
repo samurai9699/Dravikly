@@ -221,7 +221,8 @@ export async function POST(request: Request) {
 
     analysisId = analysis.id;
 
-    await trackEventServer('analysis_started', { url }, user.id);
+    // Track event without blocking
+    trackEventServer('analysis_started', { url }, user.id).catch(console.error);
 
     await supabase
       .from('analyses')
@@ -230,16 +231,19 @@ export async function POST(request: Request) {
       })
       .eq('id', analysisId);
 
-    if (analysisId) {
-      processAnalysis(analysisId, url, supabase, user.id).catch((error) => {
-        console.error('Background analysis error:', error);
-      });
+    // Process analysis synchronously - serverless functions can't reliably do background work
+    // The client will redirect to results page which polls for completion
+    try {
+      await processAnalysis(analysisId!, url, user.id);
+    } catch (error) {
+      console.error('Analysis processing error:', error);
+      // Don't throw - the analysis record is already marked as failed in processAnalysis
     }
 
     return NextResponse.json({
       success: true,
       analysisId: analysisId,
-      message: 'Analysis started successfully',
+      message: 'Analysis completed',
     });
   } catch (error) {
     console.error('Analysis error:', error);
@@ -265,15 +269,24 @@ export async function POST(request: Request) {
   }
 }
 
-async function processAnalysis(analysisId: string, url: string, supabase: any, userId: string) {
+async function processAnalysis(analysisId: string, url: string, userId: string) {
   const startTime = Date.now();
+
+  // Use admin client for background processing - request-scoped clients don't work reliably
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
   try {
     const html = await fetchWebsiteHtml(url);
 
     const forms = extractForms(html);
 
-    // Increased from 50KB to 100KB to capture more content
-    const relevantHtml = html.slice(0, 100000);
+    // Reduced from 100KB to 25KB - sending too much data slows down AI response significantly
+    const relevantHtml = html.slice(0, 25000);
 
     const aiAnalysis = await analyzeWebsiteFriction(url, relevantHtml);
 
@@ -294,7 +307,7 @@ async function processAnalysis(analysisId: string, url: string, supabase: any, u
 
     const duration = Math.round((Date.now() - startTime) / 1000);
 
-    await supabase
+    await supabaseAdmin
       .from('analyses')
       .update({
         status: 'completed',
@@ -304,30 +317,17 @@ async function processAnalysis(analysisId: string, url: string, supabase: any, u
       })
       .eq('id', analysisId);
 
-    // Usage is tracked automatically by the analyses table
-    // No need to manually increment counters with monthly limits
+    // Fire-and-forget: track event and send emails without blocking
+    trackEventServer('analysis_completed', { url, duration }, userId).catch(console.error);
+    sendAnalysisCompleteEmail(userId, url, aiAnalysis.score, analysisId).catch(console.error);
+    checkAndSendUsageWarning(userId).catch(console.error);
 
-    await trackEventServer('analysis_completed', { url, duration }, userId);
-
-    // Send completion email (don't wait for it)
-    sendAnalysisCompleteEmail(userId, url, aiAnalysis.score, analysisId).catch(err =>
-      console.error('Failed to send analysis complete email:', err)
-    );
-
-    // Check if user should receive usage warning
-    checkAndSendUsageWarning(userId).catch(err =>
-      console.error('Failed to check usage warning:', err)
-    );
   } catch (error) {
     console.error('Processing error:', error);
 
-    let errorMessage = 'Unknown error occurred';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-
-    await supabase
+    await supabaseAdmin
       .from('analyses')
       .update({
         status: 'failed',
@@ -338,6 +338,8 @@ async function processAnalysis(analysisId: string, url: string, supabase: any, u
         completed_at: new Date().toISOString(),
       })
       .eq('id', analysisId);
+
+    throw error; // Re-throw so caller knows it failed
   }
 }
 
