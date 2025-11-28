@@ -20,8 +20,8 @@ const PROGRESS_MESSAGES = [
 ];
 
 const EXAMPLE_URLS = [
-  'shopify.com/signup',
-  'paddle.com/signup',
+  'shopify.com/free-trial',
+  'stripe.com/register',
   'github.com/signup',
 ];
 
