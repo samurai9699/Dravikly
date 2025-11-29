@@ -93,8 +93,20 @@ export default function HistoryPage() {
             ? (analysesData || []).slice(0, 5)
             : analysesData || [];
 
-        setAnalyses(limitedData);
-        setFilteredAnalyses(limitedData);
+        // Mark stuck analyses as failed (older than 3 minutes and still processing/pending)
+        const threeMinutesAgo = Date.now() - 3 * 60 * 1000;
+        const processedData = limitedData.map((analysis) => {
+          if (
+            (analysis.status === 'processing' || analysis.status === 'pending') &&
+            new Date(analysis.created_at).getTime() < threeMinutesAgo
+          ) {
+            return { ...analysis, status: 'failed' };
+          }
+          return analysis;
+        });
+
+        setAnalyses(processedData);
+        setFilteredAnalyses(processedData);
         setLoading(false);
       } catch (err) {
         console.error('Error loading analyses:', err);
@@ -310,11 +322,11 @@ export default function HistoryPage() {
                 <p className="text-3xl font-bold text-white">
                   {analyses.filter((a) => a.status === 'completed' && a.friction_score !== null).length > 0
                     ? Math.round(
-                        analyses
-                          .filter((a) => a.status === 'completed' && a.friction_score !== null)
-                          .reduce((sum, a) => sum + (a.friction_score || 0), 0) /
-                          analyses.filter((a) => a.status === 'completed' && a.friction_score !== null).length
-                      )
+                      analyses
+                        .filter((a) => a.status === 'completed' && a.friction_score !== null)
+                        .reduce((sum, a) => sum + (a.friction_score || 0), 0) /
+                      analyses.filter((a) => a.status === 'completed' && a.friction_score !== null).length
+                    )
                     : 'N/A'}
                 </p>
               </div>
