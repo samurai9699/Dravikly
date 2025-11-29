@@ -124,7 +124,7 @@ async function fetchWebsiteHtml(url: string): Promise<string> {
         throw new Error('Request timeout: Website took too long to respond');
       }
       if (status === 403) {
-        throw new Error('Access denied: Website has anti-bot protection. Try a different URL or contact support for help analyzing protected sites.');
+        throw new Error('This website blocks automated analysis (Cloudflare/anti-bot protection). Try analyzing a different page, or paste your HTML directly in the feedback form for manual review.');
       }
       if (status === 404) {
         throw new Error('Page not found: The URL does not exist');
