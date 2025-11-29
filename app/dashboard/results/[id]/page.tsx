@@ -179,24 +179,27 @@ export default function ResultsPage() {
   }, [analysisId, router, supabase]);
 
   const getScoreColor = (score: number) => {
-    if (score <= 30) return 'from-green-500 to-emerald-500';
+    if (score <= 20) return 'from-green-500 to-emerald-500';
+    if (score <= 40) return 'from-cyan-500 to-blue-500';
     if (score <= 60) return 'from-yellow-500 to-amber-500';
     if (score <= 80) return 'from-orange-500 to-red-500';
     return 'from-red-500 to-rose-600';
   };
 
   const getScoreLabel = (score: number) => {
-    if (score <= 30) return 'Excellent';
-    if (score <= 60) return 'Good';
-    if (score <= 80) return 'Fair';
-    return 'Poor';
+    if (score <= 20) return 'Excellent';
+    if (score <= 40) return 'Good';
+    if (score <= 60) return 'Needs Work';
+    if (score <= 80) return 'Poor';
+    return 'Critical';
   };
 
   const getScoreDescription = (score: number) => {
-    if (score <= 30) return 'Minimal friction - your funnel is well optimized!';
-    if (score <= 60) return 'Some optimization opportunities identified';
-    if (score <= 80) return 'Significant friction points need attention';
-    return 'Major friction issues are blocking conversions';
+    if (score <= 20) return 'Minimal friction - your funnel is well optimized!';
+    if (score <= 40) return 'Your page performs well with minor friction points';
+    if (score <= 60) return 'Moderate friction that\'s likely hurting conversions';
+    if (score <= 80) return 'Significant friction - many users are likely abandoning';
+    return 'Severe friction problems requiring immediate attention';
   };
 
   const getSeverityIcon = (severity: string) => {
@@ -271,30 +274,30 @@ export default function ResultsPage() {
 
   const categorizeIssues = (frictionPoints: FrictionPoint[]) => {
     const categories: Record<string, FrictionPoint[]> = {
-      'Form Length': [],
+      'Form Complexity': [],
       'Trust Signals': [],
       'CTA Quality': [],
-      'Mobile UX': [],
-      'Validation UX': [],
-      'Privacy Friction': [],
+      'Mobile Readiness': [],
+      'User Experience': [],
+      'Page Structure': [],
       'Other': [],
     };
 
     frictionPoints.forEach((point) => {
       const type = point.type.toLowerCase();
 
-      if (type.includes('field') || type.includes('form') || type.includes('length')) {
-        categories['Form Length'].push(point);
-      } else if (type.includes('trust') || type.includes('badge') || type.includes('security')) {
+      if (type.includes('form') || type.includes('field') || type.includes('input') || type.includes('label')) {
+        categories['Form Complexity'].push(point);
+      } else if (type.includes('trust') || type.includes('badge') || type.includes('security') || type.includes('testimonial') || type.includes('proof')) {
         categories['Trust Signals'].push(point);
-      } else if (type.includes('cta') || type.includes('button') || type.includes('copy')) {
+      } else if (type.includes('cta') || type.includes('button') || type.includes('call') || type.includes('action')) {
         categories['CTA Quality'].push(point);
-      } else if (type.includes('mobile') || type.includes('touch') || type.includes('viewport')) {
-        categories['Mobile UX'].push(point);
-      } else if (type.includes('validation') || type.includes('error') || type.includes('message')) {
-        categories['Validation UX'].push(point);
-      } else if (type.includes('privacy') || type.includes('sensitive') || type.includes('personal')) {
-        categories['Privacy Friction'].push(point);
+      } else if (type.includes('mobile') || type.includes('viewport') || type.includes('responsive') || type.includes('touch')) {
+        categories['Mobile Readiness'].push(point);
+      } else if (type.includes('user') || type.includes('experience') || type.includes('ux') || type.includes('validation') || type.includes('error') || type.includes('progress')) {
+        categories['User Experience'].push(point);
+      } else if (type.includes('structure') || type.includes('page') || type.includes('layout') || type.includes('headline') || type.includes('hierarchy')) {
+        categories['Page Structure'].push(point);
       } else {
         categories['Other'].push(point);
       }
