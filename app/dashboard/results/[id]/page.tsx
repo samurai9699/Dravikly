@@ -111,7 +111,46 @@ export default function ResultsPage() {
         setLoading(false);
 
         if (analysisData.status === 'pending' || analysisData.status === 'processing') {
+          // Check if analysis is stuck (older than 3 minutes)
+          const createdAt = new Date(analysisData.created_at).getTime();
+          const now = Date.now();
+          const threeMinutes = 3 * 60 * 1000;
+
+          if (now - createdAt > threeMinutes) {
+            // Analysis is stuck - mark as failed locally and show error
+            setAnalysis({
+              ...analysisData,
+              status: 'failed',
+              insights: {
+                error: 'Analysis timed out. Please try again.',
+                summary: 'Analysis failed',
+                friction_points: [],
+              },
+            } as Analysis);
+            return;
+          }
+
+          let pollCount = 0;
+          const maxPolls = 90; // 3 minutes max (90 * 2 seconds)
+
           const interval = setInterval(async () => {
+            pollCount++;
+
+            // Stop polling after max attempts
+            if (pollCount >= maxPolls) {
+              clearInterval(interval);
+              setAnalysis(prev => prev ? {
+                ...prev,
+                status: 'failed',
+                insights: {
+                  error: 'Analysis timed out. Please try again.',
+                  summary: 'Analysis failed',
+                  friction_points: [],
+                },
+              } as Analysis : null);
+              return;
+            }
+
             const { data: updatedAnalysis } = await supabase
               .from('analyses')
               .select('*')
@@ -304,7 +343,7 @@ export default function ResultsPage() {
                 Analysis in Progress
               </h2>
               <p className="text-slate-400">
-                We're analyzing {analysis.url} for friction points. This usually takes 30-60 seconds.
+                We're analyzing {analysis.url} for friction points. This usually takes 10-30 seconds.
               </p>
               <div className="w-full bg-slate-700 rounded-full h-2 mt-6">
                 <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full animate-pulse w-3/4"></div>
@@ -320,18 +359,53 @@ export default function ResultsPage() {
   }
 
   if (analysis.status === 'failed') {
+    const errorMessage = analysis.insights?.error || 'Unknown error occurred';
+    const isAntiBot = errorMessage.toLowerCase().includes('anti-bot') ||
+      errorMessage.toLowerCase().includes('cloudflare') ||
+      errorMessage.toLowerCase().includes('403') ||
+      errorMessage.toLowerCase().includes('blocks');
+    const isTimeout = errorMessage.toLowerCase().includes('timeout');
+
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <Alert className="bg-red-500/10 border-red-500/50 text-red-400">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Analysis failed: {analysis.insights?.error || 'Unknown error occurred'}
+            Analysis failed: {errorMessage}
           </AlertDescription>
         </Alert>
+
+        {isAntiBot && (
+          <Card className="bg-slate-800/50 border-yellow-400/30">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-yellow-400 mb-3">💡 This site has bot protection</h3>
+              <p className="text-slate-300 mb-4">
+                Some websites (like LinkedIn, Facebook, Amazon) use Cloudflare or similar services to block automated tools. Try these alternatives:
+              </p>
+              <ul className="text-slate-400 space-y-2 text-sm">
+                <li>• Analyze a different page on the same site (e.g., /pricing instead of /signup)</li>
+                <li>• Try a competitor's site that doesn't have protection</li>
+                <li>• Analyze your own website - you have full access!</li>
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        {isTimeout && (
+          <Card className="bg-slate-800/50 border-yellow-400/30">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-yellow-400 mb-3">⏱️ Analysis timed out</h3>
+              <p className="text-slate-300">
+                The website took too long to respond. This can happen with slow servers or heavy pages. Try again - it often works on the second attempt.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="flex gap-4">
           <Link href="/dashboard/analyze">
             <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white">
-              Try Again
+              Try Another URL
             </Button>
           </Link>
           <Link href="/dashboard">
