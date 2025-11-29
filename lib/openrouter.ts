@@ -16,42 +16,77 @@ export interface FrictionAnalysis {
   summary: string;
 }
 
-const ANALYSIS_PROMPT = `You are a conversion rate optimization expert analyzing website forms for friction points.
+const ANALYSIS_PROMPT = `You are a conversion rate optimization expert. Analyze the webpage HTML for friction points that hurt conversions.
 
-Analyze the following webpage HTML and identify form friction issues based on these criteria:
+## ANALYZE THESE CATEGORIES:
 
-1. **Too many fields**: Forms with excessive fields reduce completion rates
-2. **Missing trust signals**: Lack of security badges, testimonials, or guarantees near submit buttons
-3. **Weak CTA copy**: Submit buttons with generic or unclear text
-4. **Mobile optimization issues**: Forms that aren't responsive or mobile-friendly
-5. **Missing error validation UX**: No clear validation feedback or error messages
-6. **No progress indicators**: Multi-step forms without showing user progress
-7. **Asking for sensitive info too early**: Requesting payment/SSN before building trust
+### 1. FORM COMPLEXITY
+- Too many fields (optimal: 3-5 fields)
+- Unclear or missing labels
+- No input type optimization (email, tel, etc.)
+- Missing placeholder text
+- No autofill/autocomplete attributes
+
+### 2. TRUST SIGNALS
+- Missing security badges (SSL, payment icons)
+- No testimonials or social proof
+- No privacy policy links near forms
+- Missing company info or contact details
+- No money-back guarantees
+
+### 3. CTA (CALL-TO-ACTION) QUALITY
+- Generic button text ("Submit", "Click Here")
+- Low contrast or hard to find buttons
+- Multiple competing CTAs causing confusion
+- No sense of urgency or value proposition
+- CTA too small or not prominent
+
+### 4. MOBILE UX (infer from HTML)
+- No viewport meta tag
+- Fixed widths that won't adapt
+- Tiny font sizes (< 14px)
+- No touch-friendly input sizing
+- Tables used for layout
+
+### 5. USER EXPERIENCE
+- No progress indicators on multi-step forms
+- Missing error validation patterns
+- Asking sensitive info too early (payment before value)
+- Intrusive elements (popups, overlays blocking content)
+- Confusing navigation or too many choices
+
+### 6. PAGE STRUCTURE
+- No clear headline or value proposition
+- Important content below the fold
+- Cluttered layout with distractions
+- Missing or weak subheadings
+- No visual hierarchy
 
 For each issue found, provide:
-- type: The friction category (e.g., "too_many_fields", "missing_trust_signals")
+- type: Category name (e.g., "form_complexity", "missing_trust_signals", "weak_cta", "mobile_ux", "user_experience", "page_structure")
 - severity: "low", "medium", or "high"
-- description: Clear explanation of the problem
-- fix: Actionable recommendation to resolve the issue
+- description: Specific problem found
+- fix: Actionable recommendation with specific suggestion
 
-Calculate an overall friction score from 0-100:
-- 0-30: Excellent (minimal friction)
-- 31-60: Good (some optimization needed)
-- 61-80: Fair (significant friction)
-- 81-100: Poor (major friction issues)
+Calculate friction score 0-100 (lower = better):
+- 0-20: Excellent (minimal friction)
+- 21-40: Good (minor issues)
+- 41-60: Needs Work (moderate friction)
+- 61-80: Poor (significant friction)
+- 81-100: Critical (severe problems)
 
-Return ONLY valid JSON in this exact format:
+Return ONLY valid JSON:
 {
   "score": <number 0-100>,
   "issues": [
     {
-      "type": "issue_type",
+      "type": "category_name",
       "severity": "low|medium|high",
-      "description": "description of issue",
-      "fix": "recommended fix"
+      "description": "specific issue found",
+      "fix": "actionable fix"
     }
   ],
-  "summary": "brief overview of findings"
+  "summary": "2-3 sentence overview"
 }`;
 
 async function sleep(ms: number): Promise<void> {
