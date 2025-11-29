@@ -976,6 +976,180 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Why Dravikly Section - Addressing the "Why not ChatGPT?" objection */}
+        <section className="max-w-6xl mx-auto mt-32 scroll-reveal">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">
+              "Why not just use{' '}
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                ChatGPT?
+              </span>
+              "
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Great question. Here's the honest answer.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {/* ChatGPT Side */}
+            <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-600/50 rounded-xl p-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center">
+                  <span className="text-xl">🤖</span>
+                </div>
+                <h3 className="text-xl font-bold text-slate-300">Using ChatGPT</h3>
+              </div>
+              <ul className="space-y-4">
+                {[
+                  'Manually copy HTML source code',
+                  'Write a detailed prompt (skill required)',
+                  'Parse through walls of text',
+                  'No score to track improvement',
+                  'Forget to check again next month',
+                  'Can\'t share reports with clients',
+                  'Start from scratch every time',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start space-x-3 text-slate-400">
+                    <span className="text-red-400 mt-1">✗</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 pt-6 border-t border-slate-700">
+                <p className="text-sm text-slate-500 italic">
+                  "It works once. Then you forget about it."
+                </p>
+              </div>
+            </div>
+
+            {/* Dravikly Side */}
+            <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-sm border border-cyan-400/50 rounded-xl p-8 relative overflow-hidden">
+              <div className="absolute top-4 right-4">
+                <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-400/50 rounded-full text-xs text-cyan-400 font-semibold">
+                  RECOMMENDED
+                </span>
+              </div>
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Using Dravikly</h3>
+              </div>
+              <ul className="space-y-4">
+                {[
+                  'Paste URL → Get results in 30 seconds',
+                  'Zero technical knowledge needed',
+                  'Clear friction score (0-100)',
+                  'Track improvements over time',
+                  'Automatic history of all analyses',
+                  'Export PDF reports for clients',
+                  'Build a conversion optimization system',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start space-x-3 text-slate-200">
+                    <span className="text-cyan-400 mt-1">✓</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 pt-6 border-t border-cyan-400/30">
+                <p className="text-sm text-cyan-300 italic">
+                  "It's a system, not a one-time hack."
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* The Key Insight */}
+          <div className="bg-slate-900/50 border border-cyan-400/20 rounded-xl p-8 mb-12">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
+                <span className="text-xl">💡</span>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">The Real Difference</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  ChatGPT is a brilliant tool — we actually use AI under the hood. But there's a difference between
+                  a <span className="text-cyan-400 font-semibold">tool</span> and a <span className="text-cyan-400 font-semibold">system</span>.
+                  Tools give you answers. Systems give you <span className="text-white font-semibold">results you can measure, track, and prove</span>.
+                  When a client asks "did our conversion rate improve?" — you need data, not a chat log.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Roadmap */}
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-white mb-2">Where We're Headed</h3>
+            <p className="text-slate-400">This is just the beginning. Here's what's coming.</p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-4">
+            {[
+              {
+                status: 'live',
+                title: 'AI Friction Analysis',
+                description: 'Instant scoring & recommendations',
+                icon: '✓',
+              },
+              {
+                status: 'building',
+                title: 'Competitor Benchmarks',
+                description: 'Compare your site vs industry leaders',
+                icon: '🔨',
+              },
+              {
+                status: 'planned',
+                title: 'Browser Extension',
+                description: 'Analyze any page without leaving it',
+                icon: '📋',
+              },
+              {
+                status: 'planned',
+                title: 'Slack Alerts',
+                description: 'Get notified when scores change',
+                icon: '📋',
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className={`rounded-xl p-6 border ${item.status === 'live'
+                    ? 'bg-cyan-500/10 border-cyan-400/50'
+                    : item.status === 'building'
+                      ? 'bg-yellow-500/10 border-yellow-400/30'
+                      : 'bg-slate-800/30 border-slate-700'
+                  }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span
+                    className={`text-xs font-semibold px-2 py-1 rounded-full ${item.status === 'live'
+                        ? 'bg-cyan-500/20 text-cyan-400'
+                        : item.status === 'building'
+                          ? 'bg-yellow-500/20 text-yellow-400'
+                          : 'bg-slate-700 text-slate-400'
+                      }`}
+                  >
+                    {item.status === 'live' ? 'LIVE' : item.status === 'building' ? 'BUILDING' : 'PLANNED'}
+                  </span>
+                  <span className="text-lg">{item.icon}</span>
+                </div>
+                <h4 className="font-bold text-white mb-1">{item.title}</h4>
+                <p className="text-sm text-slate-400">{item.description}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-slate-400">
+              Early users shape the product.{' '}
+              <Link href="/signup" className="text-cyan-400 hover:text-cyan-300 font-semibold">
+                Join now
+              </Link>{' '}
+              and help us build what you need.
+            </p>
+          </div>
+        </section>
+
         <section className="max-w-4xl mx-auto mt-32">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">
