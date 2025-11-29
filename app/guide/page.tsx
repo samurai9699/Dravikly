@@ -122,11 +122,11 @@ export default function GuidePage() {
                     <ul className="space-y-2 text-sm text-slate-300">
                       <li className="flex items-start">
                         <Zap className="w-4 h-4 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
-                        Real-time analysis
+                        Analysis in under 30 seconds
                       </li>
                       <li className="flex items-start">
                         <Zap className="w-4 h-4 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
-                        Multiple friction types
+                        6 friction categories
                       </li>
                       <li className="flex items-start">
                         <Zap className="w-4 h-4 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
@@ -134,7 +134,7 @@ export default function GuidePage() {
                       </li>
                       <li className="flex items-start">
                         <Zap className="w-4 h-4 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
-                        Industry benchmarks
+                        Best practice checks
                       </li>
                     </ul>
                   </CardContent>
@@ -154,19 +154,19 @@ export default function GuidePage() {
                     <ul className="space-y-2 text-sm text-slate-300">
                       <li className="flex items-start">
                         <TrendingUp className="w-4 h-4 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
-                        Prioritized fixes
+                        Prioritized by severity
                       </li>
                       <li className="flex items-start">
                         <TrendingUp className="w-4 h-4 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
-                        Code examples
+                        Specific fix suggestions
                       </li>
                       <li className="flex items-start">
                         <TrendingUp className="w-4 h-4 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
-                        ROI estimates
+                        Track improvements over time
                       </li>
                       <li className="flex items-start">
                         <TrendingUp className="w-4 h-4 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
-                        Export reports (PRO+)
+                        Export PDF reports (PRO+)
                       </li>
                     </ul>
                   </CardContent>
@@ -269,38 +269,38 @@ export default function GuidePage() {
                   <CardHeader>
                     <div className="flex items-center space-x-3">
                       <Clock className="w-6 h-6 text-cyan-400" />
-                      <CardTitle className="text-white">Page Performance</CardTitle>
+                      <CardTitle className="text-white">Page Structure</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <p className="text-slate-300">
-                      Speed matters. Every second counts:
+                      Layout and hierarchy impact conversions:
                     </p>
                     <ul className="space-y-2 text-sm text-slate-300">
                       <li className="flex items-start">
                         <span className="text-cyan-400 mr-2">•</span>
-                        Slow page load times
+                        Missing clear headline
                       </li>
                       <li className="flex items-start">
                         <span className="text-cyan-400 mr-2">•</span>
-                        Large unoptimized images
+                        Weak value proposition
                       </li>
                       <li className="flex items-start">
                         <span className="text-cyan-400 mr-2">•</span>
-                        Render-blocking resources
+                        Cluttered layout
                       </li>
                       <li className="flex items-start">
                         <span className="text-cyan-400 mr-2">•</span>
-                        No loading indicators
+                        Poor visual hierarchy
                       </li>
                       <li className="flex items-start">
                         <span className="text-cyan-400 mr-2">•</span>
-                        Heavy JavaScript bundles
+                        Too many distractions
                       </li>
                     </ul>
                     <div className="bg-cyan-500/10 border border-cyan-400/30 rounded-lg p-3 mt-4">
                       <p className="text-xs text-cyan-300">
-                        <strong>Impact:</strong> 1 second delay can reduce conversions by 7%
+                        <strong>Impact:</strong> Clear structure can increase conversions by 30%
                       </p>
                     </div>
                   </CardContent>
@@ -310,33 +310,33 @@ export default function GuidePage() {
                   <CardHeader>
                     <div className="flex items-center space-x-3">
                       <Smartphone className="w-6 h-6 text-cyan-400" />
-                      <CardTitle className="text-white">Mobile Experience</CardTitle>
+                      <CardTitle className="text-white">Mobile Readiness</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <p className="text-slate-300">
-                      Most traffic is mobile. We analyze:
+                      Most traffic is mobile. We check for:
                     </p>
                     <ul className="space-y-2 text-sm text-slate-300">
                       <li className="flex items-start">
                         <span className="text-cyan-400 mr-2">•</span>
-                        Non-responsive layouts
+                        Missing viewport meta tag
                       </li>
                       <li className="flex items-start">
                         <span className="text-cyan-400 mr-2">•</span>
-                        Small tap targets
+                        Fixed widths in CSS
                       </li>
                       <li className="flex items-start">
                         <span className="text-cyan-400 mr-2">•</span>
-                        Horizontal scrolling
+                        Small font sizes
                       </li>
                       <li className="flex items-start">
                         <span className="text-cyan-400 mr-2">•</span>
-                        Text too small to read
+                        No touch-friendly inputs
                       </li>
                       <li className="flex items-start">
                         <span className="text-cyan-400 mr-2">•</span>
-                        Poor mobile keyboard support
+                        Tables used for layout
                       </li>
                     </ul>
                     <div className="bg-cyan-500/10 border border-cyan-400/30 rounded-lg p-3 mt-4">
