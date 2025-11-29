@@ -291,16 +291,16 @@ export default function AnalyzePage() {
               <div>
                 <p className="text-white font-medium">Form Complexity</p>
                 <p className="text-sm text-slate-400">
-                  Number of fields, validation requirements
+                  Number of fields, input types, required fields
                 </p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-cyan-400 rounded-full mt-2 flex-shrink-0" />
               <div>
-                <p className="text-white font-medium">User Experience</p>
+                <p className="text-white font-medium">CTA & Copy</p>
                 <p className="text-sm text-slate-400">
-                  Page load time, mobile responsiveness
+                  Button text, clarity, urgency signals
                 </p>
               </div>
             </div>
@@ -309,16 +309,16 @@ export default function AnalyzePage() {
               <div>
                 <p className="text-white font-medium">Trust Signals</p>
                 <p className="text-sm text-slate-400">
-                  Security badges, social proof
+                  Security badges, testimonials, guarantees
                 </p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-cyan-400 rounded-full mt-2 flex-shrink-0" />
               <div>
-                <p className="text-white font-medium">Friction Points</p>
+                <p className="text-white font-medium">UX Patterns</p>
                 <p className="text-sm text-slate-400">
-                  Obstacles that prevent conversions
+                  Progress indicators, error handling, flow
                 </p>
               </div>
             </div>
