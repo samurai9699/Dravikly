@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
-const MODEL = 'x-ai/grok-4.1-fast:free';
+const MODEL = 'nvidia/nemotron-3-nano-30b-a3b:free';
 
 export interface FrictionIssue {
   type: string;
