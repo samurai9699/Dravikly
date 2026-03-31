@@ -86,21 +86,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-### Stripe Configuration
-```bash
-# Stripe Secret Key (from Stripe dashboard → Developers → API keys)
-STRIPE_SECRET_KEY=sk_test_...
-
-# Stripe Publishable Key (from Stripe dashboard → Developers → API keys)
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-
-# Stripe Price IDs (create products/prices in Stripe dashboard first)
-NEXT_PUBLIC_STRIPE_PRO_PRICE_ID=price_xxx
-NEXT_PUBLIC_STRIPE_ULTRA_PRICE_ID=price_yyy
-
-# Stripe Webhook Secret (from Stripe dashboard → Developers → Webhooks)
-STRIPE_WEBHOOK_SECRET=whsec_...
-```
 
 ### OpenRouter Configuration
 ```bash
